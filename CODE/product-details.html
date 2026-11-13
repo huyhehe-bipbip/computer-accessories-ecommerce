@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Product Details | General E-Commerce</title>
+    <link rel="stylesheet" href="products.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <p class="brand">General E-Commerce</p>
+        </div>
+    </header>
+
+    <main class="container catalog">
+        <p><a class="product-link" href="products.html">Back to Products</a></p>
+
+        <article id="product-details" class="product-card" hidden>
+            <p id="product-category" class="category"></p>
+            <h1 id="product-name"></h1>
+            <p id="product-description"></p>
+            <p class="price">
+                <strong id="product-price"></strong> <span>Guest price</span>
+            </p>
+            <p id="product-stock" class="stock"></p>
+        </article>
+
+        <h1 id="product-not-found" hidden>Product not found</h1>
+    </main>
+
+    <script>
+        const products = new Map([
+            ["wireless-mouse", {
+                name: "Wireless Mouse",
+                category: "Mice",
+                description: "A compact wireless mouse for everyday study and office work.",
+                price: "350,000 ₫",
+                stock: "In stock"
+            }],
+            ["mechanical-keyboard", {
+                name: "Mechanical Keyboard",
+                category: "Keyboards",
+                description: "A mechanical keyboard with tactile switches for typing and gaming.",
+                price: "890,000 ₫",
+                stock: "In stock"
+            }]
+        ]);
+
+        const productId = new URLSearchParams(window.location.search).get("id");
+        const product = products.get(productId);
+
+        if (product) {
+            document.getElementById("product-name").textContent = product.name;
+            document.getElementById("product-category").textContent = product.category;
+            document.getElementById("product-description").textContent = product.description;
+            document.getElementById("product-price").textContent = product.price;
+            document.getElementById("product-stock").textContent = product.stock;
+            document.getElementById("product-details").hidden = false;
+            document.title = `${product.name} | General E-Commerce`;
+        } else {
+            document.getElementById("product-not-found").hidden = false;
+        }
+    </script>
+</body>
+</html>
