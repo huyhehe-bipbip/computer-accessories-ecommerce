@@ -10,6 +10,19 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. ĐĂNG KÝ CONTROLLER
 // ==========================================
 builder.Services.AddControllers();
+// Cấu hình CORS cho Frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins(
+            "http://127.0.0.1:5500",
+            "http://localhost:5500"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
 
 // ==========================================
 // 2. KẾT NỐI SQL SERVER
@@ -125,7 +138,7 @@ if (app.Environment.IsDevelopment())
 // 7. MIDDLEWARE
 // ==========================================
 app.UseHttpsRedirection();
-
+app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 

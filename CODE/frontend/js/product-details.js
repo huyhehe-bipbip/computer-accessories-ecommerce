@@ -1,174 +1,21 @@
 
-// =========================================
-// TECHGEAR - PRODUCT DETAILS
-// =========================================
+/* =========================================
+   TECHGEAR - PRODUCT DETAILS
+   Backend API Integration
+========================================= */
 
 const CART_STORAGE_KEY = "techgear_cart";
-const MEMBER_DISCOUNT = 0.10;
 
-// =========================================
-// SAMPLE PRODUCT DATA
-// =========================================
-
-const detailProducts = [
-    {
-        id: 1,
-        name: "Mechanical Gaming Keyboard",
-        category: "Keyboards",
-        price: 890000,
-        stock: 25,
-        icon: "⌨️",
-        image: "",
-        description:
-            "A mechanical gaming keyboard designed for responsive typing, gaming performance and everyday computer use."
-    },
-    {
-        id: 2,
-        name: "Wireless Gaming Mouse",
-        category: "Mice",
-        price: 450000,
-        stock: 30,
-        icon: "🖱️",
-        image: "",
-        description:
-            "A comfortable wireless gaming mouse designed for precise cursor control and convenient everyday use."
-    },
-    {
-        id: 3,
-        name: "RGB Gaming Headset",
-        category: "Headsets",
-        price: 690000,
-        stock: 18,
-        icon: "🎧",
-        image: "",
-        description:
-            "A gaming headset with RGB lighting, comfortable ear cushions and clear audio for gaming and communication."
-    },
-    {
-        id: 4,
-        name: "USB-C Multiport Hub",
-        category: "Accessories",
-        price: 550000,
-        stock: 20,
-        icon: "🔌",
-        image: "",
-        description:
-            "A compact USB-C multiport hub designed to expand connectivity for compatible laptops and computer devices."
-    },
-    {
-        id: 5,
-        name: "RGB Mechanical Keyboard",
-        category: "Keyboards",
-        price: 1290000,
-        stock: 12,
-        icon: "⌨️",
-        image: "",
-        description:
-            "A mechanical keyboard with RGB lighting, designed for gaming setups and comfortable typing."
-    },
-    {
-        id: 6,
-        name: "Wired Optical Mouse",
-        category: "Mice",
-        price: 250000,
-        stock: 40,
-        icon: "🖱️",
-        image: "",
-        description:
-            "A reliable wired optical mouse suitable for office work, studying and daily computer tasks."
-    },
-    {
-        id: 7,
-        name: "Wireless Bluetooth Headset",
-        category: "Headsets",
-        price: 990000,
-        stock: 15,
-        icon: "🎧",
-        image: "",
-        description:
-            "A wireless Bluetooth headset designed for convenient listening, online meetings and entertainment."
-    },
-    {
-        id: 8,
-        name: "USB Charging Cable",
-        category: "Accessories",
-        price: 150000,
-        stock: 50,
-        icon: "🔌",
-        image: "",
-        description:
-            "A practical USB charging cable for compatible electronic devices and everyday charging needs."
-    },
-    {
-        id: 9,
-        name: "Compact Wireless Keyboard",
-        category: "Keyboards",
-        price: 590000,
-        stock: 22,
-        icon: "⌨️",
-        image: "",
-        description:
-            "A compact wireless keyboard designed to save desk space and provide convenient typing."
-    },
-    {
-        id: 10,
-        name: "Professional Gaming Mouse",
-        category: "Mice",
-        price: 790000,
-        stock: 16,
-        icon: "🖱️",
-        image: "",
-        description:
-            "A gaming mouse designed for accurate movement, comfortable handling and responsive gaming control."
-    },
-    {
-        id: 11,
-        name: "Studio Stereo Headset",
-        category: "Headsets",
-        price: 1490000,
-        stock: 0,
-        icon: "🎧",
-        image: "",
-        description:
-            "A stereo headset designed for music listening, multimedia activities and comfortable extended use."
-    },
-    {
-        id: 12,
-        name: "Large Gaming Mouse Pad",
-        category: "Accessories",
-        price: 290000,
-        stock: 35,
-        icon: "🖥️",
-        image: "",
-        description:
-            "A large mouse pad providing a smooth surface and additional space for keyboard and mouse movement."
-    }
-];
-
-// =========================================
-// APPLICATION STATE
-// =========================================
-
+let detailProducts = [];
 let currentProduct = null;
 
-// =========================================
-// DOM ELEMENTS
-// =========================================
+const $ = id => document.getElementById(id);
 
-const quantityInput =
-    document.getElementById("quantity");
-
-const decreaseButton =
-    document.getElementById("decreaseQuantity");
-
-const increaseButton =
-    document.getElementById("increaseQuantity");
-
-const addToCartButton =
-    document.getElementById("addToCart");
-
-const cartMessage =
-    document.getElementById("cartMessage");
+const quantityInput = $("quantity");
+const decreaseButton = $("decreaseQuantity");
+const increaseButton = $("increaseQuantity");
+const addToCartButton = $("addToCart");
+const cartMessage = $("cartMessage");
 
 // =========================================
 // FORMAT PRICE
@@ -182,12 +29,74 @@ function formatPrice(price) {
 }
 
 // =========================================
+// PRODUCT ICON
+// =========================================
+
+function getProductIcon(category) {
+    const name = category.toLowerCase();
+
+    if (name.includes("bàn phím") ||
+        name.includes("keyboard")) {
+        return "⌨️";
+    }
+
+    if (name.includes("chuột") ||
+        name.includes("mouse")) {
+        return "🖱️";
+    }
+
+    if (name.includes("tai nghe") ||
+        name.includes("headset")) {
+        return "🎧";
+    }
+
+    return "🔌";
+}
+
+// =========================================
+// NORMALIZE PRODUCT DATA
+// =========================================
+
+function mapProduct(product, categories) {
+    const category = categories.find(
+        item => Number(item.id) === Number(product.categoryId)
+    );
+
+    const categoryName = category
+        ? category.name
+        : `Category #${product.categoryId}`;
+
+    return {
+        id: Number(product.id),
+        name: product.name,
+        description: product.description || "",
+        category: categoryName,
+        categoryId: Number(product.categoryId),
+        price: Number(product.guestPrice),
+        memberPrice: Number(product.memberPrice),
+        stock: Number(product.stock),
+        image: product.image || "",
+        icon: getProductIcon(categoryName),
+        source: "api"
+    };
+}
+
+// =========================================
 // MEMBER PRICE
 // =========================================
 
 function getMemberPrice(product) {
-    return Math.round(
-        product.price * (1 - MEMBER_DISCOUNT)
+    return product.memberPrice;
+}
+
+function getSavingPercentage(product) {
+    if (product.price <= 0) return 0;
+
+    return Math.max(
+        0,
+        Math.round(
+            (1 - product.memberPrice / product.price) * 100
+        )
     );
 }
 
@@ -196,14 +105,11 @@ function getMemberPrice(product) {
 // =========================================
 
 function getCart() {
-
     const storedCart = localStorage.getItem(
         CART_STORAGE_KEY
     );
 
-    if (!storedCart) {
-        return [];
-    }
+    if (!storedCart) return [];
 
     const cart = JSON.parse(storedCart);
 
@@ -223,43 +129,28 @@ function getCart() {
 }
 
 function saveCart(cart) {
-
     localStorage.setItem(
         CART_STORAGE_KEY,
         JSON.stringify(cart)
     );
-
 }
 
-// =========================================
-// UPDATE CART COUNT
-// =========================================
-
 function updateCartCount() {
-
-    const cartCount =
-        document.getElementById("cartCount");
-
     try {
-
-        const cart = getCart();
-
-        const totalQuantity = cart.reduce(
+        const totalQuantity = getCart().reduce(
             (total, item) => total + item.quantity,
             0
         );
 
-        cartCount.textContent =
+        $("cartCount").textContent =
             `Cart (${totalQuantity})`;
 
     } catch (error) {
-
-        cartCount.textContent = "Cart (Unavailable)";
+        $("cartCount").textContent =
+            "Cart (Unavailable)";
 
         console.error(error);
-
     }
-
 }
 
 // =========================================
@@ -267,7 +158,6 @@ function updateCartCount() {
 // =========================================
 
 function getProductId() {
-
     const params = new URLSearchParams(
         window.location.search
     );
@@ -280,10 +170,38 @@ function getProductId() {
 
     const productId = Number(id);
 
-    return Number.isSafeInteger(productId)
+    return Number.isSafeInteger(productId) &&
+           productId > 0
         ? productId
         : null;
+}
 
+// =========================================
+// DATA STATUS
+// =========================================
+
+function showDataStatus(message, type) {
+    let status = $("detailDataStatus");
+
+    if (!status) {
+        status = document.createElement("p");
+        status.id = "detailDataStatus";
+
+        status.setAttribute("role", "status");
+        status.style.marginBottom = "16px";
+        status.style.fontSize = "14px";
+
+        $("productDetails").before(status);
+    }
+
+    status.textContent = message;
+
+    status.style.color =
+        type === "success"
+            ? "#15803d"
+            : type === "error"
+                ? "#dc2626"
+                : "#64748b";
 }
 
 // =========================================
@@ -291,35 +209,46 @@ function getProductId() {
 // =========================================
 
 function renderProductImage(container, product) {
-
     container.replaceChildren();
 
-    if (product.image) {
-
-        const image = document.createElement("img");
-
-        image.src = product.image;
-        image.alt = product.name;
-
-        image.addEventListener("error", function () {
-            container.textContent = product.icon;
-        });
-
-        container.appendChild(image);
-
-    } else {
-
+    function showIcon() {
         container.textContent = product.icon;
 
         container.setAttribute("role", "img");
-
         container.setAttribute(
             "aria-label",
             product.name + " illustration"
         );
-
     }
 
+    if (!product.image) {
+        showIcon();
+        return;
+    }
+
+    try {
+        const url = new URL(
+            product.image,
+            "http://localhost:5262"
+        );
+
+        if (!["http:", "https:"].includes(url.protocol)) {
+            showIcon();
+            return;
+        }
+
+        const image = document.createElement("img");
+
+        image.src = url.href;
+        image.alt = product.name;
+
+        image.addEventListener("error", showIcon);
+
+        container.appendChild(image);
+
+    } catch {
+        showIcon();
+    }
 }
 
 // =========================================
@@ -327,74 +256,58 @@ function renderProductImage(container, product) {
 // =========================================
 
 function renderProductDetails(product) {
+    document.title = `${product.name} | TechGear`;
 
-    document.title =
-        `${product.name} | TechGear`;
+    $("breadcrumbName").textContent = product.name;
+    $("productCategory").textContent = product.category;
+    $("productName").textContent = product.name;
 
-    document.getElementById(
-        "breadcrumbName"
-    ).textContent = product.name;
+    $("productDescription").textContent =
+        product.description || "No description available.";
 
-    document.getElementById(
-        "productCategory"
-    ).textContent = product.category;
+    $("guestPrice").textContent =
+        formatPrice(product.price);
 
-    document.getElementById(
-        "productName"
-    ).textContent = product.name;
+    $("memberPrice").textContent =
+        formatPrice(getMemberPrice(product));
 
-    document.getElementById(
-        "productDescription"
-    ).textContent = product.description;
-
-    document.getElementById(
-        "guestPrice"
-    ).textContent = formatPrice(product.price);
-
-    document.getElementById(
-        "memberPrice"
-    ).textContent = formatPrice(
-        getMemberPrice(product)
-    );
-
-    document.getElementById(
-        "savingBadge"
-    ).textContent =
-        `Save ${Math.round(MEMBER_DISCOUNT * 100)}%`;
+    $("savingBadge").textContent =
+        `Save ${getSavingPercentage(product)}%`;
 
     renderProductImage(
-        document.getElementById("productImage"),
+        $("productImage"),
         product
     );
 
-    const stockStatus =
-        document.getElementById("stockStatus");
+    const imageNote = document.querySelector(
+        ".pd-image-note"
+    );
+
+    if (imageNote) {
+        imageNote.textContent = "Product illustration";
+    }
+
+    const stockStatus = $("stockStatus");
 
     if (product.stock > 0) {
-
         stockStatus.textContent =
             `In Stock · ${product.stock} available`;
 
         stockStatus.classList.remove("out-of-stock");
 
     } else {
-
         stockStatus.textContent = "Out of Stock";
-
         stockStatus.classList.add("out-of-stock");
-
     }
 
-    document.getElementById(
-        "availableQuantity"
-    ).textContent = `${product.stock} available`;
+    $("availableQuantity").textContent =
+        `${product.stock} available`;
 
     quantityInput.min = product.stock > 0 ? 1 : 0;
     quantityInput.max = product.stock;
     quantityInput.value = product.stock > 0 ? 1 : 0;
 
     quantityInput.disabled = product.stock === 0;
-
     addToCartButton.disabled = product.stock === 0;
 
     addToCartButton.textContent =
@@ -402,14 +315,10 @@ function renderProductDetails(product) {
             ? "Add to Cart"
             : "Out of Stock";
 
-    document.getElementById(
-        "productDetails"
-    ).hidden = false;
+    $("productDetails").hidden = false;
 
     renderSpecifications(product);
-
     updateQuantity();
-
 }
 
 // =========================================
@@ -417,30 +326,16 @@ function renderProductDetails(product) {
 // =========================================
 
 function renderSpecifications(product) {
+    $("specId").textContent = product.id;
+    $("specName").textContent = product.name;
+    $("specCategory").textContent = product.category;
 
-    document.getElementById(
-        "specId"
-    ).textContent = product.id;
-
-    document.getElementById(
-        "specName"
-    ).textContent = product.name;
-
-    document.getElementById(
-        "specCategory"
-    ).textContent = product.category;
-
-    document.getElementById(
-        "specStock"
-    ).textContent =
+    $("specStock").textContent =
         product.stock > 0
             ? `${product.stock} items in stock`
             : "Out of Stock";
 
-    document.getElementById(
-        "specifications"
-    ).hidden = false;
-
+    $("specifications").hidden = false;
 }
 
 // =========================================
@@ -448,7 +343,6 @@ function renderSpecifications(product) {
 // =========================================
 
 function getValidQuantity() {
-
     if (!currentProduct || currentProduct.stock === 0) {
         return 0;
     }
@@ -465,15 +359,9 @@ function getValidQuantity() {
         1,
         Math.min(quantity, currentProduct.stock)
     );
-
 }
 
-// =========================================
-// UPDATE QUANTITY AND TOTAL PRICE
-// =========================================
-
 function updateQuantity() {
-
     if (!currentProduct) return;
 
     const quantity = getValidQuantity();
@@ -485,12 +373,9 @@ function updateQuantity() {
     increaseButton.disabled =
         quantity >= currentProduct.stock;
 
-    document.getElementById(
-        "totalPrice"
-    ).textContent = formatPrice(
+    $("totalPrice").textContent = formatPrice(
         currentProduct.price * quantity
     );
-
 }
 
 // =========================================
@@ -498,42 +383,33 @@ function updateQuantity() {
 // =========================================
 
 decreaseButton.addEventListener("click", function () {
-
     quantityInput.value = getValidQuantity() - 1;
-
     updateQuantity();
-
 });
 
 increaseButton.addEventListener("click", function () {
-
     quantityInput.value = getValidQuantity() + 1;
-
     updateQuantity();
-
 });
 
-quantityInput.addEventListener("change", updateQuantity);
+quantityInput.addEventListener(
+    "change",
+    updateQuantity
+);
 
 quantityInput.addEventListener("input", function () {
-
     if (quantityInput.value !== "") {
         updateQuantity();
     }
-
 });
 
 // =========================================
-// SHOW CART MESSAGE
+// CART MESSAGE
 // =========================================
 
 function showMessage(message, type) {
-
     cartMessage.textContent = message;
-
-    cartMessage.className =
-        `pd-message ${type}`;
-
+    cartMessage.className = `pd-message ${type}`;
 }
 
 // =========================================
@@ -541,18 +417,15 @@ function showMessage(message, type) {
 // =========================================
 
 function addToCart() {
-
     if (!currentProduct) return;
 
     if (currentProduct.stock === 0) {
-
         showMessage(
             "This product is out of stock.",
             "error"
         );
 
         return;
-
     }
 
     const quantity = getValidQuantity();
@@ -560,8 +433,17 @@ function addToCart() {
     updateQuantity();
 
     try {
-
         const cart = getCart();
+
+        // Prevent mixing sample and database products
+        if (cart.some(item => item.source !== "api")) {
+            showMessage(
+                "Please remove sample products from your cart first.",
+                "error"
+            );
+
+            return;
+        }
 
         const existingItem = cart.find(
             item => item.productId === currentProduct.id
@@ -579,40 +461,43 @@ function addToCart() {
         const newQuantity =
             existingQuantity + quantity;
 
-        // Prevent cart quantity exceeding sample stock
         if (newQuantity > currentProduct.stock) {
-
             showMessage(
                 "The requested quantity exceeds available stock.",
                 "error"
             );
 
             return;
-
         }
 
+        const cartItem = {
+            productId: currentProduct.id,
+            name: currentProduct.name,
+            category: currentProduct.category,
+            price: currentProduct.price,
+            memberPrice: currentProduct.memberPrice,
+            stock: currentProduct.stock,
+            icon: currentProduct.icon,
+            image: currentProduct.image,
+            source: "api"
+        };
+
         if (existingItem) {
+            const updatedQuantity =
+                existingItem.quantity + quantity;
 
-            existingItem.quantity += quantity;
-
-        } else {
-
-            cart.push({
-                productId: currentProduct.id,
-                name: currentProduct.name,
-                category: currentProduct.category,
-                price: currentProduct.price,
-                memberPrice: getMemberPrice(currentProduct),
-                stock: currentProduct.stock,
-                icon: currentProduct.icon,
-                image: currentProduct.image,
-                quantity: quantity
+            Object.assign(existingItem, cartItem, {
+                quantity: updatedQuantity
             });
 
+        } else {
+            cart.push({
+                ...cartItem,
+                quantity: quantity
+            });
         }
 
         saveCart(cart);
-
         updateCartCount();
 
         showMessage(
@@ -621,16 +506,13 @@ function addToCart() {
         );
 
     } catch (error) {
-
         console.error("Cart error:", error);
 
         showMessage(
-            "Unable to save your cart. Please check browser storage.",
+            "Unable to save your cart.",
             "error"
         );
-
     }
-
 }
 
 addToCartButton.addEventListener(
@@ -643,61 +525,50 @@ addToCartButton.addEventListener(
 // =========================================
 
 function createRelatedCard(product) {
-
     const card = document.createElement("article");
-
     card.className = "pd-related-card";
 
     const imageBox = document.createElement("div");
-
     imageBox.className = "pd-related-image";
 
     renderProductImage(imageBox, product);
 
     const body = document.createElement("div");
-
     body.className = "pd-related-body";
 
     const category = document.createElement("p");
-
     category.textContent = product.category;
 
     const name = document.createElement("h3");
-
     name.textContent = product.name;
 
     const price = document.createElement("strong");
-
     price.textContent = formatPrice(product.price);
 
     const link = document.createElement("a");
 
     link.href =
-        `product-details.html?id=${product.id}`;
+        `product-details.html?id=${product.id}&source=api`;
 
     link.textContent = "View Details";
 
     body.append(category, name, price, link);
-
     card.append(imageBox, body);
 
     return card;
-
 }
 
 function renderRelatedProducts(product) {
-
-    const container =
-        document.getElementById("relatedProducts");
+    const container = $("relatedProducts");
 
     const sameCategory = detailProducts.filter(item =>
         item.id !== product.id &&
-        item.category === product.category
+        item.categoryId === product.categoryId
     );
 
     const otherProducts = detailProducts.filter(item =>
         item.id !== product.id &&
-        item.category !== product.category
+        item.categoryId !== product.categoryId
     );
 
     const relatedProducts = [
@@ -707,75 +578,126 @@ function renderRelatedProducts(product) {
 
     container.replaceChildren();
 
-    relatedProducts.forEach(function (item) {
-
+    relatedProducts.forEach(item => {
         container.appendChild(
             createRelatedCard(item)
         );
-
     });
 
-    document.getElementById(
-        "relatedSection"
-    ).hidden = relatedProducts.length === 0;
-
+    $("relatedSection").hidden =
+        relatedProducts.length === 0;
 }
 
 // =========================================
 // SEARCH FORM
 // =========================================
 
-document.getElementById(
-    "detailSearchForm"
-).addEventListener("submit", function (event) {
+$("detailSearchForm").addEventListener(
+    "submit",
+    function (event) {
+        event.preventDefault();
 
-    event.preventDefault();
+        const keyword = $("detailSearchInput")
+            .value.trim();
 
-    const keyword = document.getElementById(
-        "detailSearchInput"
-    ).value.trim();
+        window.location.href = keyword
+            ? "products.html?search=" +
+                encodeURIComponent(keyword)
+            : "products.html";
+    }
+);
 
-    window.location.href = keyword
-        ? "products.html?search=" +
-            encodeURIComponent(keyword)
-        : "products.html";
+// =========================================
+// PRODUCT NOT FOUND
+// =========================================
 
-});
+function showNotFound() {
+    document.title = "Product Not Found | TechGear";
+
+    $("notFound").hidden = false;
+    $("productDetails").hidden = true;
+    $("specifications").hidden = true;
+    $("relatedSection").hidden = true;
+}
 
 // =========================================
 // INITIALIZE APPLICATION
 // =========================================
 
-function initialize() {
-
-    document.getElementById(
-        "detailYear"
-    ).textContent = new Date().getFullYear();
+async function initialize() {
+    $("detailYear").textContent =
+        new Date().getFullYear();
 
     updateCartCount();
 
     const productId = getProductId();
 
-    currentProduct = detailProducts.find(
-        product => product.id === productId
-    );
-
-    if (!currentProduct) {
-
-        document.title = "Product Not Found | TechGear";
-
-        document.getElementById(
-            "notFound"
-        ).hidden = false;
-
+    if (!productId) {
+        showNotFound();
         return;
-
     }
 
-    renderProductDetails(currentProduct);
+    const source = new URLSearchParams(
+        window.location.search
+    ).get("source");
 
-    renderRelatedProducts(currentProduct);
+    if (source === "fallback") {
+        showDataStatus(
+            "Sample product details are no longer available. Please browse database products.",
+            "error"
+        );
 
+        return;
+    }
+
+    showDataStatus(
+        "Loading product details...",
+        "loading"
+    );
+
+    try {
+        const [products, categories] = await Promise.all([
+            TechGearAPI.getProducts(),
+            TechGearAPI.getCategories()
+        ]);
+
+        detailProducts = products.map(
+            product => mapProduct(product, categories)
+        );
+
+        currentProduct = detailProducts.find(
+            product => product.id === productId
+        );
+
+        if (!currentProduct) {
+            showDataStatus(
+                "Product not found in database.",
+                "error"
+            );
+
+            showNotFound();
+            return;
+        }
+
+        renderProductDetails(currentProduct);
+        renderRelatedProducts(currentProduct);
+
+        showDataStatus(
+            "Product loaded from database successfully.",
+            "success"
+        );
+
+    } catch (error) {
+        console.error("Product loading error:", error);
+
+        showDataStatus(
+            "Unable to connect to the backend. Please check the API server.",
+            "error"
+        );
+    }
 }
+
+window.addEventListener("pageshow", updateCartCount);
+window.addEventListener("storage", updateCartCount);
 
 initialize();

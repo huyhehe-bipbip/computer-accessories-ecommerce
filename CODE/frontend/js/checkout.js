@@ -1,62 +1,33 @@
-
 "use strict";
 
 // =========================================
-// TECHGEAR - CHECKOUT
-// Frontend simulation
+// TECHGEAR - CHECKOUT API INTEGRATION
 // =========================================
 
 const CART_STORAGE_KEY = "techgear_cart";
-const ORDER_STORAGE_KEY = "techgear_orders";
-const USER_STORAGE_KEY = "techgear_user";
-
 const SHIPPING_FEE = 30000;
-const MEMBER_DISCOUNT = 0.10;
-
-const COUPON = {
-    code: "TECH10",
-    type: "percentage",
-    value: 10,
-    active: true
-};
 
 const $ = id => document.getElementById(id);
 
 let cart = [];
-let appliedCoupon = null;
 let isSubmitting = false;
+let isReady = false;
 
 // =========================================
-// STORAGE
+// CART STORAGE
 // =========================================
-
-function readStorage(key, fallback) {
-    try {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : fallback;
-    } catch (error) {
-        console.error("Storage error:", error);
-        return fallback;
-    }
-}
 
 function getCart() {
-    const data = readStorage(CART_STORAGE_KEY, []);
-    return Array.isArray(data) ? data : [];
-}
+    try {
+        const data = JSON.parse(
+            localStorage.getItem(CART_STORAGE_KEY) || "[]"
+        );
 
-function getCurrentUser() {
-    const user = readStorage(USER_STORAGE_KEY, null);
-
-    return user &&
-           user.isLoggedIn === true &&
-           user.role === "member"
-        ? user
-        : null;
-}
-
-function isMember() {
-    return getCurrentUser() !== null;
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error("Cart storage error:", error);
+        return [];
+    }
 }
 
 // =========================================
@@ -71,26 +42,7 @@ function formatPrice(price) {
 }
 
 function getUnitPrice(item) {
-    const guestPrice = Number(item.price);
-
-    if (!isMember()) {
-        return guestPrice;
-    }
-
-    const memberPrice = Number(item.memberPrice);
-
-    if (
-        item.memberPrice != null &&
-        Number.isFinite(memberPrice) &&
-        memberPrice >= 0 &&
-        memberPrice <= guestPrice
-    ) {
-        return memberPrice;
-    }
-
-    return Math.round(
-        guestPrice * (1 - MEMBER_DISCOUNT)
-    );
+    return Number(item.price);
 }
 
 function calculateQuantity() {
@@ -106,37 +58,15 @@ function calculateSubtotal() {
     }, 0);
 }
 
-function calculateDiscount(subtotal) {
-    if (!appliedCoupon) {
-        return 0;
-    }
-
-    let discount = 0;
-
-    if (appliedCoupon.type === "percentage") {
-        discount = Math.round(
-            subtotal * appliedCoupon.value / 100
-        );
-    } else if (appliedCoupon.type === "fixed") {
-        discount = appliedCoupon.value;
-    }
-
-    return Math.max(0, Math.min(discount, subtotal));
-}
-
 function calculateTotals() {
     const subtotal = calculateSubtotal();
-    const discount = calculateDiscount(subtotal);
-
-    const shipping = cart.length > 0
-        ? SHIPPING_FEE
-        : 0;
+    const shipping = cart.length > 0 ? SHIPPING_FEE : 0;
 
     return {
         subtotal,
-        discount,
+        discount: 0,
         shipping,
-        total: subtotal - discount + shipping
+        total: subtotal + shipping
     };
 }
 
@@ -155,40 +85,79 @@ function showMessage(message, isError = false) {
     $("checkoutMessage").hidden = false;
 }
 
-function showCouponMessage(message, isError = false) {
-    $("couponMessage").textContent = message;
-
-    $("couponMessage").classList.toggle(
-        "error",
-        isError
-    );
-}
-
 // =========================================
 // CUSTOMER INFORMATION
 // =========================================
 
 function initializeCustomer() {
-    const user = getCurrentUser();
-
-    if (!user) {
-        $("customerType").textContent = "Guest Checkout";
-
-        $("customerNotice").textContent =
-            "You can place an order without creating an account.";
-
-        return;
-    }
-
-    $("customerType").textContent = "Member Checkout";
+    $("customerType").textContent = "Guest Checkout";
 
     $("customerNotice").textContent =
-        "Exclusive member pricing has been applied.";
+        "You can place an order without creating an account.";
 
-    $("fullName").value = user.fullName || user.name || "";
-    $("phone").value = user.phone || "";
-    $("email").value = user.email || "";
-    $("address").value = user.address || "";
+    // Features awaiting backend integration.
+    $("couponCode").disabled = true;
+    $("applyCoupon").disabled = true;
+    $("removeCoupon").hidden = true;
+
+    $("couponMessage").textContent =
+        "Coupons are currently unavailable.";
+
+    $("email").disabled = true;
+    $("notes").disabled = true;
+
+    const bankTransfer = document.querySelector(
+        'input[name="payment"][value="BANK_TRANSFER"]'
+    );
+
+    if (bankTransfer) {
+        bankTransfer.disabled = true;
+    }
+
+    const cod = document.querySelector(
+        'input[name="payment"][value="COD"]'
+    );
+
+    if (cod) {
+        cod.checked = true;
+    }
+}
+
+// =========================================
+// REFRESH PRODUCTS FROM DATABASE
+// =========================================
+
+async function refreshCartProducts() {
+    const products = await TechGearAPI.getProducts();
+
+    const updatedCart = cart.map(item => {
+        if (item.source !== "api") {
+            throw new Error(
+                "Please remove demo products and add products from the database."
+            );
+        }
+
+        const product = products.find(product =>
+            String(product.id) === String(item.productId)
+        );
+
+        if (!product) {
+            throw new Error(
+                `${item.name} is no longer available.`
+            );
+        }
+
+        return {
+            ...item,
+            name: product.name,
+            price: product.guestPrice,
+            memberPrice: product.memberPrice,
+            stock: product.stock,
+            image: product.image
+        };
+    });
+
+    cart = updatedCart;
 }
 
 // =========================================
@@ -203,15 +172,15 @@ function validateStock() {
     const seenProducts = new Set();
 
     for (const item of cart) {
+        const productId = Number(item.productId);
         const quantity = Number(item.quantity);
         const stock = Number(item.stock);
         const price = Number(item.price);
 
         if (
-            item.productId == null ||
-            !item.name ||
-            item.price == null ||
-            item.stock == null ||
+            item.source !== "api" ||
+            !Number.isInteger(productId) ||
+            productId < 1 ||
             !Number.isInteger(quantity) ||
             quantity < 1 ||
             !Number.isInteger(stock) ||
@@ -222,10 +191,8 @@ function validateStock() {
             return "Invalid product information in your cart.";
         }
 
-        const productId = String(item.productId);
-
         if (seenProducts.has(productId)) {
-            return "Duplicate product entries. Please review your cart.";
+            return "Duplicate product entries.";
         }
 
         seenProducts.add(productId);
@@ -244,6 +211,7 @@ function validateStock() {
 
 function renderOrderItems() {
     const container = $("orderItems");
+
     container.replaceChildren();
 
     cart.forEach(item => {
@@ -278,7 +246,9 @@ function renderOrderItems() {
         quantity.textContent = `Quantity: ${item.quantity}`;
 
         const unitPrice = document.createElement("p");
-        unitPrice.textContent = formatPrice(getUnitPrice(item));
+        unitPrice.textContent = formatPrice(
+            getUnitPrice(item)
+        );
 
         info.append(name, quantity, unitPrice);
 
@@ -295,7 +265,7 @@ function renderOrderItems() {
 }
 
 // =========================================
-// RENDER SUMMARY
+// RENDER ORDER SUMMARY
 // =========================================
 
 function updateSummary() {
@@ -305,9 +275,7 @@ function updateSummary() {
     $("cartCount").textContent = quantity;
     $("totalItems").textContent = quantity;
 
-    $("pricingType").textContent = isMember()
-        ? "Member Price"
-        : "Guest Price";
+    $("pricingType").textContent = "Guest Price";
 
     $("subtotal").textContent =
         formatPrice(totals.subtotal);
@@ -323,92 +291,31 @@ function updateSummary() {
 }
 
 function renderCheckout() {
+    $("placeOrder").disabled = true;
+
     if (cart.length === 0) {
         $("checkoutLayout").hidden = true;
         $("emptyCheckout").hidden = false;
         $("cartCount").textContent = "0";
+
         return;
     }
 
     $("emptyCheckout").hidden = true;
     $("checkoutLayout").hidden = false;
 
+    renderOrderItems();
+    updateSummary();
+
     const stockError = validateStock();
 
     if (stockError) {
         showMessage(stockError, true);
-        $("placeOrder").disabled = true;
         return;
     }
 
-    $("placeOrder").disabled = false;
-
-    renderOrderItems();
-    updateSummary();
-}
-
-// =========================================
-// COUPON VALIDATION
-// =========================================
-
-async function applyCoupon() {
-    const code = $("couponCode")
-        .value.trim().toUpperCase();
-
-    if (!code) {
-        showCouponMessage(
-            "Please enter a coupon code.",
-            true
-        );
-        return;
-    }
-
-    $("applyCoupon").disabled = true;
-    $("applyCoupon").textContent = "Checking...";
-
-    // Simulate asynchronous coupon validation.
-    // Replace this delay with an API request later.
-    await new Promise(resolve => {
-        setTimeout(resolve, 500);
-    });
-
-    try {
-        if (code !== COUPON.code || !COUPON.active) {
-            appliedCoupon = null;
-
-            $("removeCoupon").hidden = true;
-
-            showCouponMessage(
-                "Invalid or inactive coupon code.",
-                true
-            );
-        } else {
-            appliedCoupon = { ...COUPON };
-
-            $("couponCode").value = COUPON.code;
-            $("removeCoupon").hidden = false;
-
-            showCouponMessage(
-                "Coupon applied successfully! You saved 10%."
-            );
-        }
-
-        updateSummary();
-    } finally {
-        $("applyCoupon").disabled = false;
-        $("applyCoupon").textContent = "Apply";
-    }
-}
-
-function removeCoupon() {
-    appliedCoupon = null;
-
-    $("couponCode").value = "";
-    $("removeCoupon").hidden = true;
-
-    showCouponMessage("Coupon removed.");
-
-    updateSummary();
+    $("placeOrder").disabled =
+        !isReady || isSubmitting;
 }
 
 // =========================================
@@ -419,22 +326,26 @@ function getCustomerInformation() {
     return {
         fullName: $("fullName").value.trim(),
         phone: $("phone").value.trim(),
-        email: $("email").value.trim(),
-        address: $("address").value.trim(),
-        notes: $("notes").value.trim()
+        address: $("address").value.trim()
     };
 }
 
 function validateCustomer(customer) {
-    if (customer.fullName.length < 2) {
-        return "Please enter your full name.";
+    if (
+        customer.fullName.length < 2 ||
+        customer.fullName.length > 100
+    ) {
+        return "Please enter a valid full name.";
     }
 
     if (!/^0[0-9]{9}$/.test(customer.phone)) {
         return "Please enter a valid 10-digit phone number.";
     }
 
-    if (customer.address.length < 5) {
+    if (
+        customer.address.length < 5 ||
+        customer.address.length > 300
+    ) {
         return "Please enter a valid shipping address.";
     }
 
@@ -442,84 +353,20 @@ function validateCustomer(customer) {
 }
 
 // =========================================
-// CREATE SIMULATED ORDER
+// CREATE API REQUEST
 // =========================================
 
-function createOrder(customer, paymentMethod) {
-    const totals = calculateTotals();
-    const user = getCurrentUser();
-
+function createOrderRequest(customer) {
     return {
-        orderId: "TG-" + crypto.randomUUID(),
-        customerId: user ? user.id || null : null,
-        customerType: user ? "Member" : "Guest",
-
-        customer,
+        customer_name: customer.fullName,
+        phone_number: customer.phone,
+        shipping_address: customer.address,
 
         items: cart.map(item => ({
-            productId: item.productId,
-            name: item.name,
-            quantity: Number(item.quantity),
-            unitPrice: getUnitPrice(item),
-
-            subtotal:
-                getUnitPrice(item) * Number(item.quantity)
-        })),
-
-        couponCode: appliedCoupon
-            ? appliedCoupon.code
-            : null,
-
-        subtotal: totals.subtotal,
-        discount: totals.discount,
-        shippingFee: totals.shipping,
-        total: totals.total,
-
-        paymentMethod,
-        paymentStatus: "Simulated",
-        status: "Pending",
-        createdAt: new Date().toISOString()
+            product_id: Number(item.productId),
+            quantity: Number(item.quantity)
+        }))
     };
-}
-
-function saveOrder(order) {
-    const data = readStorage(ORDER_STORAGE_KEY, []);
-
-    const orders = Array.isArray(data)
-        ? data
-        : [];
-
-    const previousOrders =
-        localStorage.getItem(ORDER_STORAGE_KEY);
-
-    try {
-        localStorage.setItem(
-            ORDER_STORAGE_KEY,
-            JSON.stringify([...orders, order])
-        );
-
-        localStorage.removeItem(CART_STORAGE_KEY);
-
-        return true;
-    } catch (error) {
-        console.error("Unable to save order:", error);
-
-        // Attempt to restore previous order data.
-        try {
-            if (previousOrders === null) {
-                localStorage.removeItem(ORDER_STORAGE_KEY);
-            } else {
-                localStorage.setItem(
-                    ORDER_STORAGE_KEY,
-                    previousOrders
-                );
-            }
-        } catch (restoreError) {
-            console.error(restoreError);
-        }
-
-        return false;
-    }
 }
 
 // =========================================
@@ -533,18 +380,17 @@ function showOrderSuccess(order) {
 
     $("orderSuccess").hidden = false;
 
-    $("successOrderId").textContent = order.orderId;
+    $("successOrderId").textContent =
+        "TG-" + order.order_id;
 
     $("successCustomer").textContent =
-        order.customer.fullName;
+        order.customer_name;
 
     $("successPayment").textContent =
-        order.paymentMethod === "COD"
-            ? "Cash on Delivery"
-            : "Bank Transfer";
+        "Cash on Delivery";
 
     $("successTotal").textContent =
-        formatPrice(order.total);
+        formatPrice(order.total_amount);
 
     $("cartCount").textContent = "0";
 
@@ -561,7 +407,7 @@ function showOrderSuccess(order) {
 async function placeOrder(event) {
     event.preventDefault();
 
-    if (isSubmitting) {
+    if (isSubmitting || !isReady) {
         return;
     }
 
@@ -572,8 +418,6 @@ async function placeOrder(event) {
         showMessage(customerError, true);
         return;
     }
-
-    cart = getCart();
 
     const stockError = validateStock();
 
@@ -586,8 +430,12 @@ async function placeOrder(event) {
         'input[name="payment"]:checked'
     )?.value;
 
-    if (!["COD", "BANK_TRANSFER"].includes(paymentMethod)) {
-        showMessage("Please select a payment method.", true);
+    if (paymentMethod !== "COD") {
+        showMessage(
+            "Only Cash on Delivery is currently supported.",
+            true
+        );
+
         return;
     }
 
@@ -597,12 +445,11 @@ async function placeOrder(event) {
     $("placeOrder").textContent = "Processing Order...";
 
     try {
-        await new Promise(resolve => {
-            setTimeout(resolve, 600);
-        });
+        const previousTotal = calculateTotals().total;
 
-        // Recheck cart before order creation.
-        cart = getCart();
+        await refreshCartProducts();
+
+        renderCheckout();
 
         const latestStockError = validateStock();
 
@@ -611,32 +458,105 @@ async function placeOrder(event) {
             return;
         }
 
-        const order = createOrder(customer, paymentMethod);
-
-        if (!saveOrder(order)) {
+        if (calculateTotals().total !== previousTotal) {
             showMessage(
-                "Unable to create your order. Please try again.",
+                "Product prices have changed. Please review your order.",
                 true
             );
+
             return;
+        }
+
+        const orderData = createOrderRequest(customer);
+
+        // Send HTTP POST to ASP.NET Core Backend.
+        const order = await TechGearAPI.createOrder(
+            orderData
+        );
+
+        if (!order || !order.order_id) {
+            throw new Error(
+                "Unable to confirm order creation."
+            );
+        }
+
+        // Clear cart only after backend confirms success.
+        try {
+            localStorage.removeItem(CART_STORAGE_KEY);
+        } catch (storageError) {
+            console.error(
+                "Unable to clear cart:",
+                storageError
+            );
         }
 
         cart = [];
 
+        isReady = false;
+
         showOrderSuccess(order);
+
+    } catch (error) {
+        console.error("Checkout error:", error);
+
+        showMessage(
+            `${error.message || "Unable to place order."} ` +
+            "If the connection was interrupted, verify the order before retrying.",
+            true
+        );
+
+    } finally {
+        isSubmitting = false;
+
+        $("placeOrder").textContent = "Place Order";
+
+        $("placeOrder").disabled =
+            !isReady || Boolean(validateStock());
+    }
+}
+
+// =========================================
+// INITIALIZATION
+// =========================================
+
+async function initializeCheckout() {
+    isReady = false;
+
+    $("placeOrder").disabled = true;
+
+    $("currentYear").textContent =
+        new Date().getFullYear();
+
+    initializeCustomer();
+
+    cart = getCart();
+
+    renderCheckout();
+
+    if (cart.length === 0) {
+        return;
+    }
+
+    try {
+        await refreshCartProducts();
+
+        isReady = true;
+
+        renderCheckout();
+
+        if (!validateStock()) {
+            showMessage(
+                "Product prices and stock verified successfully."
+            );
+        }
 
     } catch (error) {
         console.error(error);
 
         showMessage(
-            "An unexpected error occurred.",
+            error.message || "Unable to connect to the server.",
             true
         );
-    } finally {
-        isSubmitting = false;
-
-        $("placeOrder").disabled = false;
-        $("placeOrder").textContent = "Place Order";
     }
 }
 
@@ -644,45 +564,22 @@ async function placeOrder(event) {
 // EVENTS
 // =========================================
 
-$("applyCoupon").addEventListener("click", applyCoupon);
-
-$("removeCoupon").addEventListener("click", removeCoupon);
-
-$("couponCode").addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        event.preventDefault();
-
-        if (!$("applyCoupon").disabled) {
-            applyCoupon();
-        }
-    }
-});
-
-$("checkoutForm").addEventListener("submit", placeOrder);
+$("checkoutForm").addEventListener(
+    "submit",
+    placeOrder
+);
 
 window.addEventListener("storage", event => {
-    if (!$("orderSuccess").hidden) {
+    if (isSubmitting || !$("orderSuccess").hidden) {
         return;
     }
 
     if (
         event.key === CART_STORAGE_KEY ||
-        event.key === USER_STORAGE_KEY ||
         event.key === null
     ) {
-        cart = getCart();
-        initializeCustomer();
-        renderCheckout();
+        window.location.reload();
     }
 });
 
-// =========================================
-// INITIALIZATION
-// =========================================
-
-$("currentYear").textContent = new Date().getFullYear();
-
-cart = getCart();
-
-initializeCustomer();
-renderCheckout();
+initializeCheckout();

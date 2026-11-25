@@ -1,37 +1,7 @@
 
-// Temporary product data for frontend development
-const featuredProducts = [
-    {
-        id: 1,
-        name: "Mechanical Gaming Keyboard",
-        category: "Keyboards",
-        price: 890000,
-        icon: "⌨️"
-    },
-    {
-        id: 2,
-        name: "Wireless Gaming Mouse",
-        category: "Mice",
-        price: 450000,
-        icon: "🖱️"
-    },
-    {
-        id: 3,
-        name: "RGB Gaming Headset",
-        category: "Headsets",
-        price: 690000,
-        icon: "🎧"
-    },
-    {
-        id: 4,
-        name: "USB-C Multiport Hub",
-        category: "Accessories",
-        price: 550000,
-        icon: "🔌"
-    }
-];
+"use strict";
 
-// Format product price in Vietnamese Dong
+// Format product price
 function formatPrice(price) {
     return new Intl.NumberFormat("vi-VN", {
         style: "currency",
@@ -39,39 +9,140 @@ function formatPrice(price) {
     }).format(price);
 }
 
-// Render featured products
-function renderFeaturedProducts() {
-    const productContainer =
-        document.getElementById("featured-products");
+// Get product icon
+function getProductIcon(category) {
+    const name = category.toLowerCase();
 
-    if (!productContainer) return;
+    if (name.includes("bàn phím") || name.includes("keyboard")) {
+        return "⌨️";
+    }
 
-    productContainer.innerHTML = featuredProducts.map(product => `
-        <article class="product-card">
-            <div class="product-image" aria-hidden="true">
-                ${product.icon}
-            </div>
+    if (name.includes("chuột") || name.includes("mouse")) {
+        return "🖱️";
+    }
 
-            <div class="product-info">
-                <p class="product-category">
-                    ${product.category}
-                </p>
+    if (name.includes("tai nghe") || name.includes("headset")) {
+        return "🎧";
+    }
 
-                <h3 class="product-name">
-                    ${product.name}
-                </h3>
+    return "🔌";
+}
 
-                <p class="product-price">
-                    ${formatPrice(product.price)}
-                </p>
+// Create product card
+function createProductCard(product, categoryName) {
+    const card = document.createElement("article");
+    card.className = "product-card";
 
-                <a class="product-button"
-                   href="product-details.html?id=${product.id}">
-                    View Details
-                </a>
-            </div>
-        </article>
-    `).join("");
+    const imageBox = document.createElement("div");
+    imageBox.className = "product-image";
+
+    function showIcon() {
+        imageBox.textContent = getProductIcon(categoryName);
+    }
+
+    if (product.image && /^https?:\/\//i.test(product.image)) {
+        const image = document.createElement("img");
+
+        image.src = product.image;
+        image.alt = product.name;
+        image.loading = "lazy";
+
+        image.style.width = "100%";
+        image.style.height = "100%";
+        image.style.objectFit = "contain";
+
+        image.addEventListener("error", showIcon);
+
+        imageBox.appendChild(image);
+    } else {
+        showIcon();
+    }
+
+    const info = document.createElement("div");
+    info.className = "product-info";
+
+    const category = document.createElement("p");
+    category.className = "product-category";
+    category.textContent = categoryName;
+
+    const name = document.createElement("h3");
+    name.className = "product-name";
+    name.textContent = product.name;
+
+    const price = document.createElement("p");
+    price.className = "product-price";
+    price.textContent = formatPrice(product.displayPrice);
+
+    const button = document.createElement("a");
+button.className = "product-button";
+button.textContent = "View Details";
+button.href = `product-details.html?id=${encodeURIComponent(product.id)}&source=api`;
+
+    info.append(category, name, price, button);
+    card.append(imageBox, info);
+
+    return card;
+}
+
+// Load products from backend API
+async function loadFeaturedProducts() {
+    const container = document.getElementById(
+        "featured-products"
+    );
+
+    const status = document.getElementById(
+        "product-status"
+    );
+
+    container.replaceChildren();
+    status.textContent = "Loading products...";
+
+    try {
+        const [products, categories] = await Promise.all([
+            TechGearAPI.getProducts(),
+            TechGearAPI.getCategories()
+        ]);
+
+        const categoryMap = new Map(
+            categories.map(category => [
+                category.id,
+                category.name
+            ])
+        );
+
+        if (products.length === 0) {
+            status.textContent = "No products available.";
+            return;
+        }
+
+        const featuredProducts = products.slice(0, 4);
+
+        featuredProducts.forEach(product => {
+            const categoryName =
+                categoryMap.get(product.categoryId)
+                || "Accessories";
+
+            const card = createProductCard(
+                product,
+                categoryName
+            );
+
+            container.appendChild(card);
+        });
+
+        status.textContent =
+            "Products loaded from database successfully.";
+
+        status.style.color = "#15803d";
+
+    } catch (error) {
+        console.error("Failed to load products:", error);
+
+        status.textContent =
+            "Unable to connect to the product API.";
+
+        status.style.color = "#dc2626";
+    }
 }
 
 // Mobile navigation
@@ -80,7 +151,11 @@ const navMenu = document.getElementById("nav-menu");
 
 menuToggle.addEventListener("click", function () {
     const isOpen = navMenu.classList.toggle("show");
-    menuToggle.setAttribute("aria-expanded", String(isOpen));
+
+    menuToggle.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+    );
 });
 
 // Search form
@@ -95,13 +170,42 @@ searchForm.addEventListener("submit", function (event) {
 
     if (keyword) {
         window.location.href =
-            "products.html?search=" + encodeURIComponent(keyword);
+            "products.html?search=" +
+            encodeURIComponent(keyword);
     }
 });
 
-// Automatically update footer year
+// Update shopping cart counter
+function updateCartCount() {
+    const cartCount = document.getElementById("cart-count");
+
+    try {
+        const cart = JSON.parse(
+            localStorage.getItem("techgear_cart") || "[]"
+        );
+
+        const total = Array.isArray(cart)
+            ? cart.reduce(
+                (sum, item) =>
+                    sum + (Number(item.quantity) || 0),
+                0
+            )
+            : 0;
+
+        cartCount.textContent = total;
+
+    } catch {
+        cartCount.textContent = "0";
+    }
+}
+
+// Update footer year
 document.getElementById("current-year").textContent =
     new Date().getFullYear();
 
 // Initialize homepage
-renderFeaturedProducts();
+updateCartCount();
+loadFeaturedProducts();
+
+window.addEventListener("pageshow", updateCartCount);
+window.addEventListener("storage", updateCartCount);

@@ -1,122 +1,15 @@
 
+"use strict";
+
 // =========================================
 // TECHGEAR - PRODUCT LISTING
 // =========================================
 
-// API configuration
-const API_CONFIG = {
-    enabled: false,
-    productsUrl: ""
-};
-
-// =========================================
-// SAMPLE PRODUCT DATA
-// =========================================
-
-const sampleProducts = [
-    {
-        id: 1,
-        name: "Mechanical Gaming Keyboard",
-        category: "Keyboards",
-        price: 890000,
-        icon: "⌨️",
-        image: ""
-    },
-    {
-        id: 2,
-        name: "Wireless Gaming Mouse",
-        category: "Mice",
-        price: 450000,
-        icon: "🖱️",
-        image: ""
-    },
-    {
-        id: 3,
-        name: "RGB Gaming Headset",
-        category: "Headsets",
-        price: 690000,
-        icon: "🎧",
-        image: ""
-    },
-    {
-        id: 4,
-        name: "USB-C Multiport Hub",
-        category: "Accessories",
-        price: 550000,
-        icon: "🔌",
-        image: ""
-    },
-    {
-        id: 5,
-        name: "RGB Mechanical Keyboard",
-        category: "Keyboards",
-        price: 1290000,
-        icon: "⌨️",
-        image: ""
-    },
-    {
-        id: 6,
-        name: "Wired Optical Mouse",
-        category: "Mice",
-        price: 250000,
-        icon: "🖱️",
-        image: ""
-    },
-    {
-        id: 7,
-        name: "Wireless Bluetooth Headset",
-        category: "Headsets",
-        price: 990000,
-        icon: "🎧",
-        image: ""
-    },
-    {
-        id: 8,
-        name: "USB Charging Cable",
-        category: "Accessories",
-        price: 150000,
-        icon: "🔌",
-        image: ""
-    },
-    {
-        id: 9,
-        name: "Compact Wireless Keyboard",
-        category: "Keyboards",
-        price: 590000,
-        icon: "⌨️",
-        image: ""
-    },
-    {
-        id: 10,
-        name: "Professional Gaming Mouse",
-        category: "Mice",
-        price: 790000,
-        icon: "🖱️",
-        image: ""
-    },
-    {
-        id: 11,
-        name: "Studio Stereo Headset",
-        category: "Headsets",
-        price: 1490000,
-        icon: "🎧",
-        image: ""
-    },
-    {
-        id: 12,
-        name: "Large Gaming Mouse Pad",
-        category: "Accessories",
-        price: 290000,
-        icon: "🖥️",
-        image: ""
-    }
-];
-
-// =========================================
 // APPLICATION STATE
-// =========================================
 
 let products = [];
+let categories = [];
+let isLoading = true;
 
 const filters = {
     keyword: "",
@@ -144,14 +37,13 @@ const maxPriceInput = document.getElementById("maxPrice");
 const sortProducts = document.getElementById("sortProducts");
 const applyFiltersButton = document.getElementById("applyFilters");
 const resetFiltersButton = document.getElementById("resetFilters");
-
-const clearEmptyFiltersButton =
-    document.getElementById("clearEmptyFilters");
+const clearEmptyFiltersButton = document.getElementById("clearEmptyFilters");
 
 const filterError = document.getElementById("filterError");
 
-const categoryInputs =
-    document.querySelectorAll('input[name="category"]');
+const categoryGroup = document
+    .querySelector('input[name="category"]')
+    .closest(".filter-group");
 
 // =========================================
 // FORMAT PRICE
@@ -165,18 +57,117 @@ function formatPrice(price) {
 }
 
 // =========================================
+// NORMALIZE SEARCH TEXT
+// =========================================
+
+function normalizeText(value) {
+    return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .trim();
+}
+
+// =========================================
+// CATEGORY MAPPING
+// =========================================
+
+function getCategoryKey(category) {
+    const text = normalizeText(category);
+
+    if (
+        text.includes("ban phim") ||
+        text.includes("keyboard")
+    ) {
+        return "keyboards";
+    }
+
+    if (
+        text.includes("chuot") ||
+        text.includes("mouse") ||
+        text === "mice"
+    ) {
+        return "mice";
+    }
+
+    if (
+        text.includes("tai nghe") ||
+        text.includes("headset") ||
+        text.includes("headphone")
+    ) {
+        return "headsets";
+    }
+
+    if (
+        text.includes("phu kien") ||
+        text.includes("accessor")
+    ) {
+        return "accessories";
+    }
+
+    return text;
+}
+
+// =========================================
 // CATEGORY ICON
 // =========================================
 
 function getCategoryIcon(category) {
     const icons = {
-        Keyboards: "⌨️",
-        Mice: "🖱️",
-        Headsets: "🎧",
-        Accessories: "🔌"
+        keyboards: "⌨️",
+        mice: "🖱️",
+        headsets: "🎧",
+        accessories: "🔌"
     };
 
-    return icons[category] || "📦";
+    return icons[getCategoryKey(category)] || "📦";
+}
+
+// =========================================
+// BUILD CATEGORY FILTERS
+// =========================================
+
+function buildCategoryFilters() {
+    categoryGroup.replaceChildren();
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Categories";
+
+    categoryGroup.appendChild(heading);
+
+    function addCategoryOption(value, name) {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+
+        input.type = "radio";
+        input.name = "category";
+        input.value = String(value);
+        input.checked = filters.category === String(value);
+
+        label.append(
+            input,
+            document.createTextNode(" " + name)
+        );
+
+        categoryGroup.appendChild(label);
+    }
+
+    addCategoryOption("all", "All Products");
+
+    categories.forEach(category => {
+        addCategoryOption(category.id, category.name);
+    });
+
+    // Keep the Accessories navigation option
+    // even when no accessory category exists yet.
+    const hasAccessories = categories.some(category =>
+        getCategoryKey(category.name) === "accessories"
+    );
+
+    if (!hasAccessories) {
+        addCategoryOption("accessories", "Accessories");
+    }
 }
 
 // =========================================
@@ -188,11 +179,11 @@ function createProductCard(product) {
     card.className = "catalog-card";
 
     // Product image
+
     const imageBox = document.createElement("div");
     imageBox.className = "catalog-card-image";
 
-    const fallbackIcon =
-        product.icon || getCategoryIcon(product.category);
+    const fallbackIcon = getCategoryIcon(product.category);
 
     if (product.image) {
         const image = document.createElement("img");
@@ -211,6 +202,7 @@ function createProductCard(product) {
     }
 
     // Product information
+
     const body = document.createElement("div");
     body.className = "catalog-card-body";
 
@@ -226,17 +218,35 @@ function createProductCard(product) {
     price.className = "catalog-card-price";
     price.textContent = formatPrice(product.price);
 
-    // Product details link
+    // Stock information
+
+    const stock = document.createElement("p");
+
+    stock.textContent = product.stock > 0
+        ? `In stock: ${product.stock}`
+        : "Out of stock";
+
+    stock.style.fontSize = "13px";
+    stock.style.color = product.stock > 0
+        ? "#15803d"
+        : "#dc2626";
+
+    // Temporarily disable product details
+    // until the details page uses backend data.
+
     const detailsButton = document.createElement("a");
-    detailsButton.className = "catalog-card-btn";
+detailsButton.className = "catalog-card-btn";
+detailsButton.textContent = "View Details";
+detailsButton.href = `product-details.html?id=${encodeURIComponent(product.id)}&source=api`;
 
-    detailsButton.href =
-        "product-details.html?id=" +
-        encodeURIComponent(product.id);
+    body.append(
+        category,
+        name,
+        price,
+        stock,
+        detailsButton
+    );
 
-    detailsButton.textContent = "View Details";
-
-    body.append(category, name, price, detailsButton);
     card.append(imageBox, body);
 
     return card;
@@ -262,7 +272,7 @@ function renderProducts(productList) {
 
     const fragment = document.createDocumentFragment();
 
-    productList.forEach(function (product) {
+    productList.forEach(product => {
         fragment.appendChild(createProductCard(product));
     });
 
@@ -274,18 +284,21 @@ function renderProducts(productList) {
 // =========================================
 
 function filterProducts() {
-    let result = products.filter(function (product) {
+    if (isLoading) {
+        return;
+    }
 
-        const keyword = filters.keyword.toLowerCase();
+    const keyword = normalizeText(filters.keyword);
 
+    let result = products.filter(product => {
         const matchesKeyword =
-            product.name.toLowerCase().includes(keyword) ||
-            product.category.toLowerCase().includes(keyword);
+            normalizeText(product.name).includes(keyword) ||
+            normalizeText(product.category).includes(keyword) ||
+            normalizeText(product.description).includes(keyword);
 
         const matchesCategory =
             filters.category === "all" ||
-            product.category.toLowerCase() ===
-            filters.category.toLowerCase();
+            String(product.categoryId) === filters.category;
 
         const matchesPrice =
             product.price >= filters.minPrice &&
@@ -299,7 +312,6 @@ function filterProducts() {
     });
 
     switch (filters.sort) {
-
         case "price-asc":
             result.sort((a, b) => a.price - b.price);
             break;
@@ -310,13 +322,13 @@ function filterProducts() {
 
         case "name-asc":
             result.sort((a, b) =>
-                a.name.localeCompare(b.name)
+                a.name.localeCompare(b.name, "vi")
             );
             break;
 
         case "name-desc":
             result.sort((a, b) =>
-                b.name.localeCompare(a.name)
+                b.name.localeCompare(a.name, "vi")
             );
             break;
 
@@ -339,7 +351,6 @@ searchForm.addEventListener("submit", function (event) {
     filterProducts();
 });
 
-// Live search without reloading the page
 searchInput.addEventListener("input", function () {
     filters.keyword = searchInput.value.trim();
 
@@ -350,12 +361,12 @@ searchInput.addEventListener("input", function () {
 // CATEGORY FILTER
 // =========================================
 
-categoryInputs.forEach(function (input) {
-    input.addEventListener("change", function () {
-        filters.category = input.value;
+categoryGroup.addEventListener("change", function (event) {
+    if (event.target.matches('input[name="category"]')) {
+        filters.category = event.target.value;
 
         filterProducts();
-    });
+    }
 });
 
 // =========================================
@@ -363,7 +374,6 @@ categoryInputs.forEach(function (input) {
 // =========================================
 
 function applyPriceFilter() {
-
     const min = minPriceInput.value === ""
         ? 0
         : Number(minPriceInput.value);
@@ -382,12 +392,14 @@ function applyPriceFilter() {
     ) {
         filterError.textContent =
             "Please enter valid non-negative prices.";
+
         return;
     }
 
     if (min > max) {
         filterError.textContent =
             "Minimum price cannot exceed maximum price.";
+
         return;
     }
 
@@ -419,7 +431,6 @@ sortProducts.addEventListener("change", function () {
 // =========================================
 
 function resetFilters() {
-
     filters.keyword = "";
     filters.category = "all";
     filters.minPrice = 0;
@@ -432,9 +443,11 @@ function resetFilters() {
     sortProducts.value = "default";
     filterError.textContent = "";
 
-    categoryInputs.forEach(function (input) {
-        input.checked = input.value === "all";
-    });
+    categoryGroup
+        .querySelectorAll('input[name="category"]')
+        .forEach(input => {
+            input.checked = input.value === "all";
+        });
 
     history.replaceState(
         null,
@@ -460,7 +473,6 @@ clearEmptyFiltersButton.addEventListener(
 // =========================================
 
 function readUrlParameters() {
-
     const params = new URLSearchParams(
         window.location.search
     );
@@ -469,15 +481,17 @@ function readUrlParameters() {
     const keyword = params.get("search");
 
     if (category) {
-        categoryInputs.forEach(function (input) {
-            if (
-                input.value.toLowerCase() ===
-                category.toLowerCase()
-            ) {
-                input.checked = true;
-                filters.category = input.value;
-            }
-        });
+        const matchedCategory = categories.find(item =>
+            String(item.id) === category ||
+            normalizeText(item.name) === normalizeText(category) ||
+            getCategoryKey(item.name) === getCategoryKey(category)
+        );
+
+        if (matchedCategory) {
+            filters.category = String(matchedCategory.id);
+        } else if (getCategoryKey(category) === "accessories") {
+            filters.category = "accessories";
+        }
     }
 
     if (keyword) {
@@ -494,9 +508,7 @@ const menuToggle = document.getElementById("menuToggle");
 const catalogNav = document.getElementById("catalogNav");
 
 menuToggle.addEventListener("click", function () {
-
-    const isOpen =
-        catalogNav.classList.toggle("is-open");
+    const isOpen = catalogNav.classList.toggle("is-open");
 
     menuToggle.setAttribute(
         "aria-expanded",
@@ -507,75 +519,111 @@ menuToggle.addEventListener("click", function () {
 });
 
 // =========================================
-// LOAD PRODUCTS FROM API
+// UPDATE CART COUNT
+// =========================================
+
+function updateCartCount() {
+    const cartCount = document.getElementById("cartCount");
+
+    try {
+        const cart = JSON.parse(
+            localStorage.getItem("techgear_cart") || "[]"
+        );
+
+        const total = Array.isArray(cart)
+            ? cart.reduce((sum, item) => {
+                const quantity = Number(item.quantity);
+
+                return sum + (
+                    Number.isSafeInteger(quantity) &&
+                    quantity > 0
+                        ? quantity
+                        : 0
+                );
+            }, 0)
+            : 0;
+
+        cartCount.textContent = total;
+    } catch {
+        cartCount.textContent = "0";
+    }
+}
+
+// =========================================
+// LOAD PRODUCTS FROM BACKEND API
 // =========================================
 
 async function loadProducts() {
+    isLoading = true;
 
-    if (!API_CONFIG.enabled) {
-
-        products = [...sampleProducts];
-
-        dataStatus.textContent =
-            "Sample products for UI preview.";
-
-        filterProducts();
-
-        return;
-    }
+    productCount.textContent = "Loading products...";
+    dataStatus.textContent = "Connecting to database...";
+    emptyState.hidden = true;
 
     try {
-        dataStatus.textContent = "Loading products...";
+        const [apiProducts, apiCategories] = await Promise.all([
+            window.TechGearAPI.getProducts(),
+            window.TechGearAPI.getCategories()
+        ]);
 
-        const response = await fetch(
-            API_CONFIG.productsUrl
-        );
+        categories = apiCategories;
 
-        if (!response.ok) {
-            throw new Error(
-                `HTTP error: ${response.status}`
+        products = apiProducts.map(product => {
+            const category = categories.find(item =>
+                Number(item.id) === Number(product.categoryId)
             );
-        }
 
-        const data = await response.json();
+            const price = Number(
+                product.displayPrice ?? product.guestPrice
+            );
 
-        // Expected frontend data structure.
-        // Update this mapping after checking the backend API.
+            if (!Number.isFinite(price) || price < 0) {
+                throw new Error("Invalid product price.");
+            }
 
-        if (
-            !Array.isArray(data) ||
-            !data.every(product =>
-                product.id != null &&
-                typeof product.name === "string" &&
-                typeof product.category === "string" &&
-                typeof product.price === "number" &&
-                Number.isFinite(product.price) &&
-                product.price >= 0
-            )
-        ) {
-            throw new Error("Invalid product data format.");
-        }
+            return {
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                image: product.image,
+                categoryId: product.categoryId,
+                category: category
+                    ? category.name
+                    : "Uncategorized",
+                price: price,
+                guestPrice: product.guestPrice,
+                memberPrice: product.memberPrice,
+                stock: product.stock
+            };
+        });
 
-        products = data;
+        readUrlParameters();
+        buildCategoryFilters();
 
-        dataStatus.textContent = "";
+        dataStatus.textContent =
+            "Products loaded from database successfully.";
+
+        dataStatus.style.color = "#15803d";
+
+        isLoading = false;
 
         filterProducts();
 
     } catch (error) {
-
         console.error("Failed to load products:", error);
 
         products = [];
+        isLoading = false;
 
         productGrid.replaceChildren();
 
         productCount.textContent = "Products unavailable";
-
         emptyState.hidden = true;
 
         dataStatus.textContent =
-            "Unable to load products. Please try again later.";
+            "Unable to connect to the database. Please check the backend.";
+
+        dataStatus.style.color = "#dc2626";
     }
 }
 
@@ -584,8 +632,11 @@ async function loadProducts() {
 // =========================================
 
 function initialize() {
-    readUrlParameters();
+    updateCartCount();
     loadProducts();
 }
+
+window.addEventListener("pageshow", updateCartCount);
+window.addEventListener("storage", updateCartCount);
 
 initialize();
