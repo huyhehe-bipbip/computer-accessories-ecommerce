@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | TechGear</title>
+    <link rel="icon" href="images/favicon.svg">
+    <link rel="stylesheet" href="css/checkout.css">
+    <script src="js/api.js" defer></script>
+<script src="js/checkout.js" defer></script>
+</head>
+<body>
+
+    <div class="top-bar">
+        Welcome to TechGear - Your Computer Accessories Store
+    </div>
+
+    <header class="header">
+        <div class="container header-inner">
+            <a href="index.html" class="logo">Tech<span>Gear</span></a>
+
+            <form class="search-form" action="products.html" method="get">
+                <input type="search" name="search"
+                       placeholder="Search for products..."
+                       aria-label="Search products">
+                <button type="submit">Search</button>
+            </form>
+
+            <div class="header-actions">
+                <a href="login.html">Account</a>
+                <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navigation">
+        <div class="container nav-inner">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="products.html?category=Keyboards">Keyboards</a>
+            <a href="products.html?category=Mice">Mice</a>
+            <a href="products.html?category=Headsets">Headsets</a>
+            <a href="products.html?category=Accessories">Accessories</a>
+        </div>
+    </nav>
+
+    <main class="container main-content">
+
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> /
+            <a href="cart.html">Shopping Cart</a> /
+            <span>Checkout</span>
+        </div>
+
+        <section class="page-heading">
+            <h1>Checkout</h1>
+            <p>Complete your shipping information and place your order.</p>
+        </section>
+
+        <div id="checkoutMessage" class="message"
+             role="status" aria-live="polite" hidden></div>
+
+        <section id="emptyCheckout" class="panel empty-state" hidden>
+            <div class="empty-icon">🛒</div>
+            <h2>Your cart is empty</h2>
+            <p>Please add products before checking out.</p>
+            <a href="products.html" class="primary-button">
+                Continue Shopping
+            </a>
+        </section>
+
+        <div id="checkoutLayout" class="checkout-layout" hidden>
+
+            <form id="checkoutForm" class="panel">
+
+                <h2>Customer Information</h2>
+
+                <div class="notice">
+                    <strong id="customerType">Guest Checkout</strong>
+                    <p id="customerNotice">
+                        You can place an order without creating an account.
+                    </p>
+                </div>
+
+                <h2 class="section-title">Shipping Information</h2>
+
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName"
+                           autocomplete="name"
+                           placeholder="Enter your full name"
+                           minlength="2" maxlength="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone"
+                           autocomplete="tel"
+                           placeholder="Enter your phone number"
+                           pattern="0[0-9]{9}" required>
+                    <small>Enter a valid 10-digit Vietnamese phone number.</small>
+                </div>
+
+                <<div class="form-group" hidden>
+    <label for="email">Email Address (Optional)</label>
+    <input type="email" id="email" disabled>
+</div>
+
+                <div class="form-group">
+                    <label for="address">Shipping Address *</label>
+                    <textarea id="address" rows="4"
+                              autocomplete="street-address"
+                              minlength="5" maxlength="300"
+                              placeholder="Enter your complete delivery address"
+                              required></textarea>
+                </div>
+
+                <div class="form-group" hidden>
+    <label for="notes">Order Notes (Optional)</label>
+    <textarea id="notes" disabled></textarea>
+</div>
+
+                <h2 class="section-title">Payment Method</h2>
+
+                <label class="payment-option">
+                    <input type="radio" name="payment"
+                           value="COD" checked>
+                    <span>Cash on Delivery (COD)</span>
+                </label>
+
+                <label class="payment-option">
+                    <input type="radio" name="payment"
+                           value="BANK_TRANSFER">
+                    <span>Bank Transfer (Coming Soon)</span>
+                </label>
+
+                <div class="notice">
+                    <p>Orders are saved directly to our database.
+   Payment is collected upon delivery.</p>
+                </div>
+
+                <a href="cart.html" class="back-link">
+                    &larr; Back to Shopping Cart
+                </a>
+
+            </form>
+
+            <aside class="panel summary-panel">
+
+                <h2>Order Summary</h2>
+
+                <div id="orderItems" class="order-items"></div>
+
+                <div class="coupon-section">
+                    <label for="couponCode">Coupon Code</label>
+
+                    <div class="coupon-input">
+                        <input type="text" id="couponCode"
+                               placeholder="Enter coupon code">
+                        <button type="button" id="applyCoupon">
+                            Apply
+                        </button>
+                    </div>
+
+                    <p id="couponMessage" role="status"
+                       class="coupon-message"></p>
+
+                    <button type="button" id="removeCoupon"
+                            class="remove-coupon" hidden>
+                        Remove Coupon
+                    </button>
+                </div>
+
+                <div class="summary-row">
+                    <span>Pricing Type</span>
+                    <strong id="pricingType">Guest Price</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Total Items</span>
+                    <strong id="totalItems">0</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <strong id="subtotal">0 ₫</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Coupon Discount</span>
+                    <strong id="discount" class="discount">0 ₫</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Shipping Fee</span>
+                    <strong id="shippingFee">0 ₫</strong>
+                </div>
+
+                <div class="summary-total">
+                    <span>Final Total</span>
+                    <strong id="finalTotal">0 ₫</strong>
+                </div>
+
+                <button type="submit" form="checkoutForm"
+                        id="placeOrder" class="primary-button full-width">
+                    Place Order
+                </button>
+
+                <p class="summary-note">
+                    Your order will be created with Pending status.
+                </p>
+
+            </aside>
+
+        </div>
+
+        <section id="orderSuccess" class="panel success-panel" hidden>
+
+            <div class="success-icon">✓</div>
+
+            <h1>Order Placed Successfully!</h1>
+
+            <p>Thank you for shopping with TechGear.</p>
+            <p>Your order has been successfully saved to our database.</p>
+
+            <div class="confirmation-details">
+
+                <div class="summary-row">
+                    <span>Order Reference</span>
+                    <strong id="successOrderId"></strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Customer</span>
+                    <strong id="successCustomer"></strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Order Status</span>
+                    <strong class="pending-status">Pending</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Payment Method</span>
+                    <strong id="successPayment"></strong>
+                </div>
+
+                <div class="summary-total">
+                    <span>Total Amount</span>
+                    <strong id="successTotal"></strong>
+                </div>
+
+            </div>
+
+            <a href="products.html" class="primary-button">
+                Continue Shopping
+            </a>
+
+            <a href="index.html" class="back-link">
+                Back to Home
+            </a>
+
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <h3>TechGear</h3>
+            <p>Your trusted computer accessories store.</p>
+            <p>&copy; <span id="currentYear"></span> TechGear.
+                All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

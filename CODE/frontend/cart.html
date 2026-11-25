@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | TechGear</title>
+    <link rel="icon" href="images/favicon.svg">
+    <link rel="stylesheet" href="css/cart.css">
+    <script src="js/cart.js" defer></script>
+</head>
+<body>
+
+    <div class="top-bar">
+        Welcome to TechGear - Your Computer Accessories Store
+    </div>
+
+    <header class="header">
+        <div class="container header-inner">
+
+            <a href="index.html" class="logo">
+                Tech<span>Gear</span>
+            </a>
+
+            <form class="search-form" action="products.html" method="get">
+                <input type="search" name="search"
+                       placeholder="Search for products..."
+                       aria-label="Search products">
+                <button type="submit">Search</button>
+            </form>
+
+            <div class="header-actions">
+                <a href="login.html">Account</a>
+                <a href="cart.html" class="active">
+                    Cart (<span id="cartCount">0</span>)
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    <nav class="navigation">
+        <div class="container nav-inner">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="products.html?category=Keyboards">Keyboards</a>
+            <a href="products.html?category=Mice">Mice</a>
+            <a href="products.html?category=Headsets">Headsets</a>
+            <a href="products.html?category=Accessories">Accessories</a>
+        </div>
+    </nav>
+
+    <main class="container main-content">
+
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>/</span>
+            <span>Shopping Cart</span>
+        </div>
+
+        <section class="page-heading">
+            <h1>Shopping Cart</h1>
+            <p>Review your items before checkout.</p>
+        </section>
+
+        <div id="cartMessage" class="cart-message"
+             role="status" aria-live="polite" hidden></div>
+
+        <section id="emptyCart" class="empty-cart" hidden>
+            <div class="empty-icon">🛒</div>
+            <h2>Your cart is empty</h2>
+            <p>Explore our products and find the perfect accessories.</p>
+            <a href="products.html" class="primary-button">
+                Continue Shopping
+            </a>
+        </section>
+
+        <div id="cartLayout" class="cart-layout" hidden>
+
+            <section class="cart-panel">
+
+                <div class="panel-heading">
+                    <h2>Cart Items</h2>
+                    <span id="itemCount">0 items</span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Subtotal</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartItems"></tbody>
+                    </table>
+                </div>
+
+                <div class="cart-bottom">
+                    <a href="products.html" class="continue-link">
+                        &larr; Continue Shopping
+                    </a>
+
+                    <button id="clearCart" class="clear-button">
+                        Clear Cart
+                    </button>
+                </div>
+
+            </section>
+
+            <aside class="summary-panel">
+
+                <h2>Order Summary</h2>
+
+                <div class="summary-row">
+                    <span>Total Items</span>
+                    <strong id="summaryQuantity">0</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <strong id="summarySubtotal">0 ₫</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>Calculated at checkout</span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Discount</span>
+                    <span>Applied at checkout</span>
+                </div>
+
+                <div class="summary-total">
+                    <span>Estimated Total</span>
+                    <strong id="summaryTotal">0 ₫</strong>
+                </div>
+
+                <div class="member-notice">
+                    <strong>Member Benefits</strong>
+                    <p>Registered members can enjoy exclusive product pricing.</p>
+                </div>
+
+                <a href="checkout.html"
+                   class="primary-button checkout-button">
+                    Proceed to Checkout
+                </a>
+
+                <p class="summary-note">
+                    Final pricing will be confirmed during checkout.
+                </p>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <h3>TechGear</h3>
+            <p>Your trusted computer accessories store.</p>
+            <p>&copy; <span id="currentYear"></span> TechGear.
+                All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

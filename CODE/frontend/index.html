@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TechGear Computer Accessories Store">
+
+    <title>TechGear | Computer Accessories</title>
+
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/api.js" defer></script>
+<script src="js/main.js" defer></script>
+</head>
+
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        Welcome to TechGear - Your Computer Accessories Store
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+
+            <a href="index.html" class="logo">Tech<span>Gear</span></a>
+
+            <form class="search-box" id="search-form">
+                <input type="search" id="search-input"
+                       placeholder="Search for products..."
+                       aria-label="Search for products" required>
+                <button type="submit">Search</button>
+            </form>
+
+            <div class="header-actions">
+                <a href="login.html">Account</a>
+                <a href="cart.html">
+                    Cart (<span id="cart-count">0</span>)
+                </a>
+            </div>
+
+            <button class="menu-toggle" id="menu-toggle"
+                    type="button" aria-label="Toggle menu"
+                    aria-expanded="false" aria-controls="nav-menu">
+                &#9776;
+            </button>
+
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navigation">
+        <ul class="container nav-menu" id="nav-menu">
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="products.html?category=keyboard">Keyboards</a></li>
+            <li><a href="products.html?category=mouse">Mice</a></li>
+            <li><a href="products.html?category=headset">Headsets</a></li>
+            <li><a href="products.html?category=accessory">Accessories</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+
+        <!-- Hero Banner -->
+        <section class="hero">
+            <div class="hero-content">
+                <p class="hero-label">UPGRADE YOUR SETUP</p>
+                <h1>Gear Up.<br>Play Better.</h1>
+                <p>Discover premium computer accessories for work,
+                   gaming and everyday use.</p>
+                <a href="products.html" class="btn-primary">Shop Now</a>
+            </div>
+
+            <div class="hero-visual" aria-hidden="true">
+                &#9000;
+            </div>
+        </section>
+
+        <!-- Product Categories -->
+        <section class="section">
+            <h2 class="section-title">Shop by Category</h2>
+
+            <div class="category-grid">
+
+                <a href="products.html?category=keyboard" class="category-card">
+                    <span class="category-icon">&#9000;</span>
+                    <h3>Keyboards</h3>
+                </a>
+
+                <a href="products.html?category=mouse" class="category-card">
+                    <span class="category-icon">&#128433;</span>
+                    <h3>Mice</h3>
+                </a>
+
+                <a href="products.html?category=headset" class="category-card">
+                    <span class="category-icon">&#127911;</span>
+                    <h3>Headsets</h3>
+                </a>
+
+                <a href="products.html?category=accessory" class="category-card">
+                    <span class="category-icon">&#128268;</span>
+                    <h3>Accessories</h3>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- Featured Products -->
+        <section class="section">
+            <div class="section-heading">
+                <h2 class="section-title">Featured Products</h2>
+                <a href="products.html">View All &rarr;</a>
+            </div>
+
+            <p class="demo-note" id="product-status"
+   role="status" aria-live="polite">
+    Loading products...
+</p>
+
+            <div class="product-grid" id="featured-products">
+                <!-- Products rendered by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Store Benefits -->
+        <section class="benefits">
+            <div>
+                <h3>Fast Delivery</h3>
+                <p>Convenient nationwide shipping</p>
+            </div>
+            <div>
+                <h3>Quality Products</h3>
+                <p>Reliable computer accessories</p>
+            </div>
+            <div>
+                <h3>Member Benefits</h3>
+                <p>Special prices for registered members</p>
+            </div>
+            <div>
+                <h3>Customer Support</h3>
+                <p>We are here to help</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-grid">
+
+            <div>
+                <h2>TechGear</h2>
+                <p>Your destination for computer accessories.</p>
+            </div>
+
+            <div>
+                <h3>Quick Links</h3>
+                <a href="index.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Shopping Cart</a>
+            </div>
+
+            <div>
+                <h3>Customer Account</h3>
+                <a href="login.html">Login</a>
+                <a href="register.html">Register</a>
+            </div>
+
+            <div>
+                <h3>Contact Us</h3>
+                <p>Ho Chi Minh City, Vietnam</p>
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+            &copy; <span id="current-year"></span> TechGear.
+            All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>
