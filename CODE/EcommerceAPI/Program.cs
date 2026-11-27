@@ -126,7 +126,13 @@ if (app.Environment.IsDevelopment())
 // ==========================================
 app.UseHttpsRedirection();
 
+// CHO PHÉP HIỂN THỊ HÌNH ẢNH TỪ WWWROOT
+app.UseStaticFiles();
+
+// XÁC THỰC JWT
 app.UseAuthentication();
+
+// PHÂN QUYỀN
 app.UseAuthorization();
 
 // ==========================================
