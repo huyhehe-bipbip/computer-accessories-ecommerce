@@ -1,0 +1,794 @@
+
+/* =====================================================
+   TECHGEAR - PRODUCTS PAGE CSS
+   ===================================================== */
+
+/* =======================
+   1. GENERAL
+======================= */
+
+.products-page {
+    background: #f3f6fa;
+    color: #172033;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.products-page * {
+    box-sizing: border-box;
+}
+
+.catalog-container {
+    width: min(1280px, 92%);
+    margin: 0 auto;
+}
+
+.products-page a {
+    text-decoration: none;
+}
+
+.products-page button,
+.products-page input,
+.products-page select {
+    font: inherit;
+}
+
+/* =======================
+   2. TOP BAR
+======================= */
+
+.catalog-topbar {
+    width: 100%;
+    padding: 10px 15px;
+    background: #101a2e;
+    color: #fff;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* =======================
+   3. HEADER
+======================= */
+
+.catalog-header {
+    width: 100%;
+    background: #fff;
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.catalog-header-inner {
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+}
+
+.catalog-logo {
+    color: #111827;
+    font-size: 30px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.catalog-logo span {
+    color: #2563eb;
+}
+
+.catalog-search {
+    display: flex;
+    width: min(520px, 45%);
+    height: 48px;
+}
+
+.catalog-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 0 15px;
+    border: 1px solid #d5deea;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    outline: none;
+}
+
+.catalog-search input:focus {
+    border-color: #2563eb;
+}
+
+.catalog-search button {
+    padding: 0 25px;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+.catalog-search button:hover {
+    background: #1d4ed8;
+}
+
+.catalog-actions {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.catalog-actions a {
+    color: #172033;
+    font-weight: 600;
+}
+
+.catalog-actions a:hover {
+    color: #2563eb;
+}
+
+.catalog-menu-toggle {
+    display: none;
+    border: none;
+    background: transparent;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* =======================
+   4. NAVIGATION
+======================= */
+
+.catalog-nav {
+    width: 100%;
+    background: #1e293b;
+}
+
+.catalog-nav-inner {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    min-height: 58px;
+}
+
+.catalog-nav-inner a {
+    color: #fff;
+    font-size: 15px;
+    transition: color 0.2s;
+}
+
+.catalog-nav-inner a:hover,
+.catalog-nav-inner a.active {
+    color: #60a5fa;
+}
+
+/* =======================
+   5. MAIN PAGE
+======================= */
+
+.catalog-page {
+    padding-top: 30px;
+    padding-bottom: 60px;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    color: #2563eb;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.catalog-heading {
+    margin-bottom: 35px;
+}
+
+.catalog-heading h1 {
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 34px;
+    font-weight: 750;
+}
+
+.catalog-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* =======================
+   6. CATALOG LAYOUT
+======================= */
+
+.catalog-layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 25px;
+    align-items: start;
+}
+
+/* =======================
+   7. FILTER SIDEBAR
+======================= */
+
+.catalog-filters {
+    padding: 22px;
+    background: #fff;
+    border: 1px solid #dce4ee;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.03);
+}
+
+.filter-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.filter-heading h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+.filter-heading button {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    cursor: pointer;
+}
+
+.filter-heading button:hover {
+    text-decoration: underline;
+}
+
+.filter-group {
+    padding: 20px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.filter-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.filter-group h3 {
+    margin: 0 0 18px;
+    font-size: 16px;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 13px 0;
+    color: #334155;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.filter-group input[type="radio"] {
+    width: 15px;
+    height: 15px;
+    accent-color: #2563eb;
+    cursor: pointer;
+}
+
+.price-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.price-inputs input {
+    width: 100%;
+    min-width: 0;
+    height: 45px;
+    padding: 0 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    outline: none;
+}
+
+.price-inputs input:focus {
+    border-color: #2563eb;
+}
+
+.filter-error {
+    color: #dc2626;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.apply-filter-btn {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+.apply-filter-btn:hover {
+    background: #1d4ed8;
+}
+
+/* =======================
+   8. PRODUCT TOOLBAR
+======================= */
+
+.catalog-results {
+    min-width: 0;
+}
+
+.catalog-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.catalog-toolbar p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.sort-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.sort-control label {
+    font-size: 14px;
+}
+
+.sort-control select {
+    min-width: 180px;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+}
+
+.sort-control select:focus {
+    border-color: #2563eb;
+}
+
+.catalog-status {
+    min-height: 20px;
+    margin: 0 0 16px;
+    font-size: 13px;
+}
+
+/* =======================
+   9. PRODUCT GRID
+======================= */
+
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+    align-items: stretch;
+}
+
+.catalog-card {
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #dce4ee;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.catalog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.09);
+}
+
+/* =======================
+   10. PRODUCT IMAGE
+======================= */
+
+.catalog-card-image {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #edf2f8;
+    color: #64748b;
+    font-size: 48px;
+}
+
+.catalog-card-image img {
+    width: 100%;
+    height: 100%;
+    padding: 15px;
+    object-fit: contain;
+    display: block;
+}
+
+/* =======================
+   11. PRODUCT INFORMATION
+======================= */
+
+.catalog-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 17px;
+}
+
+.catalog-card-category {
+    margin: 0 0 10px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.catalog-card-name {
+    min-height: 42px;
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.catalog-card-price {
+    margin: 0 0 15px;
+    color: #dc2626;
+    font-size: 20px;
+    font-weight: 750;
+}
+
+.catalog-card-body > p:not(.catalog-card-category):not(.catalog-card-price) {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.catalog-card-btn {
+    display: block;
+    width: 100%;
+    margin-top: auto;
+    padding: 13px 12px;
+    border-radius: 7px;
+    background: #2563eb;
+    color: #fff;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.catalog-card-btn:hover {
+    background: #1d4ed8;
+}
+
+/* =======================
+   12. ADMIN IMAGE EDITOR
+======================= */
+
+.admin-image-editor {
+    margin-top: 16px;
+    padding: 13px;
+    background: #f1f5f9;
+    border: 1px solid #dbe3ee;
+    border-radius: 9px;
+}
+
+.admin-image-editor label {
+    display: block;
+    margin-bottom: 10px;
+    color: #172033;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-image-input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 12px;
+    color: #334155;
+    font-size: 12px;
+}
+
+.admin-upload-button {
+    width: 100%;
+    min-height: 40px;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-upload-button:hover {
+    background: #1d4ed8;
+}
+
+.admin-upload-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-upload-status {
+    min-height: 16px;
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* =======================
+   13. EMPTY STATE
+======================= */
+
+.catalog-empty {
+    padding: 65px 20px;
+    background: #fff;
+    border: 1px solid #dce4ee;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.catalog-empty[hidden] {
+    display: none !important;
+}
+
+.catalog-empty h3 {
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 21px;
+}
+
+.catalog-empty p {
+    margin: 0 0 22px;
+    color: #64748b;
+}
+
+.catalog-empty button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: #fff;
+    cursor: pointer;
+}
+
+.catalog-empty button:hover {
+    background: #1d4ed8;
+}
+
+/* =======================
+   14. FOOTER
+======================= */
+
+.catalog-footer {
+    margin-top: 30px;
+    padding-top: 45px;
+    background: #101a2e;
+    color: #fff;
+}
+
+.catalog-footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 35px;
+    padding-bottom: 35px;
+}
+
+.catalog-footer-grid h3 {
+    margin: 0 0 18px;
+    font-size: 18px;
+}
+
+.catalog-footer-grid p {
+    color: #cbd5e1;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.catalog-footer-grid a {
+    display: block;
+    margin-bottom: 12px;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.catalog-footer-grid a:hover {
+    color: #60a5fa;
+}
+
+.catalog-footer-bottom {
+    padding: 18px 10px;
+    border-top: 1px solid #334155;
+    color: #cbd5e1;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* =======================
+   15. RESPONSIVE - TABLET
+======================= */
+
+@media (max-width: 1050px) {
+    .catalog-layout {
+        grid-template-columns: 230px minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .catalog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 17px;
+    }
+
+    .catalog-footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* =======================
+   16. RESPONSIVE - MOBILE
+======================= */
+
+@media (max-width: 700px) {
+    .catalog-container {
+        width: 94%;
+    }
+
+    .catalog-header-inner {
+        min-height: auto;
+        padding-top: 17px;
+        padding-bottom: 17px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .catalog-logo {
+        font-size: 25px;
+    }
+
+    .catalog-search {
+        order: 3;
+        width: 100%;
+    }
+
+    .catalog-actions {
+        margin-left: auto;
+        gap: 12px;
+        font-size: 13px;
+    }
+
+    .catalog-menu-toggle {
+        display: block;
+    }
+
+    .catalog-nav-inner {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+
+    .catalog-nav.is-open .catalog-nav-inner {
+        display: flex;
+    }
+
+    .catalog-nav-inner a {
+        padding: 12px 5px;
+    }
+
+    .catalog-page {
+        padding-top: 22px;
+    }
+
+    .catalog-heading h1 {
+        font-size: 28px;
+    }
+
+    .catalog-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .catalog-filters {
+        width: 100%;
+    }
+
+    .catalog-toolbar {
+        flex-wrap: wrap;
+    }
+
+    .sort-control {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .sort-control select {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .catalog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .catalog-card-image {
+        height: 150px;
+    }
+
+    .catalog-card-body {
+        padding: 12px;
+    }
+
+    .catalog-card-name {
+        font-size: 14px;
+    }
+
+    .catalog-card-price {
+        font-size: 17px;
+    }
+
+    .catalog-card-btn {
+        padding: 11px 7px;
+        font-size: 12px;
+    }
+
+    .catalog-footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+}
+
+/* =======================
+   17. SMALL MOBILE
+======================= */
+
+@media (max-width: 420px) {
+    .catalog-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .catalog-card-image {
+        height: 210px;
+    }
+
+    .catalog-footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .catalog-actions {
+        gap: 8px;
+    }
+
+    .catalog-actions a {
+        font-size: 12px;
+    }
+}

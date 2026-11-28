@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="Explore computer accessories at TechGear">
+
+    <title>Products | TechGear</title>
+
+    <link rel="icon" type="image/svg+xml"
+          href="images/favicon.svg">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/products.css">
+</head>
+
+<body class="products-page">
+
+    <!-- Top Bar -->
+    <div class="catalog-topbar">
+        Welcome to TechGear - Your Computer Accessories Store
+    </div>
+
+    <!-- Header -->
+    <header class="catalog-header">
+        <div class="catalog-container catalog-header-inner">
+
+            <a href="index.html" class="catalog-logo">
+                Tech<span>Gear</span>
+            </a>
+
+            <form id="searchForm" class="catalog-search">
+                <input type="search"
+                       id="searchInput"
+                       placeholder="Search for products..."
+                       aria-label="Search products">
+
+                <button type="submit">Search</button>
+            </form>
+
+            <div class="catalog-actions">
+                <a href="account.html">Account</a>
+                <a href="cart.html">
+                    Cart (<span id="cartCount">0</span>)
+                </a>
+
+                <button type="button"
+                        id="menuToggle"
+                        class="catalog-menu-toggle"
+                        aria-label="Toggle navigation"
+                        aria-controls="catalogNav"
+                        aria-expanded="false">
+                    ☰
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav id="catalogNav" class="catalog-nav">
+        <div class="catalog-container catalog-nav-inner">
+            <a href="index.html">Home</a>
+            <a href="products.html" class="active">Products</a>
+            <a href="products.html?category=Keyboards">Keyboards</a>
+            <a href="products.html?category=Mice">Mice</a>
+            <a href="products.html?category=Headsets">Headsets</a>
+            <a href="products.html?category=Accessories">Accessories</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="catalog-container catalog-page">
+
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>/</span>
+            <span>Products</span>
+        </div>
+
+        <section class="catalog-heading">
+            <h1>All Products</h1>
+            <p>Explore our computer accessories collection.</p>
+        </section>
+
+        <div class="catalog-layout">
+
+            <!-- Filter Sidebar -->
+            <aside class="catalog-filters">
+
+                <div class="filter-heading">
+                    <h2>Filters</h2>
+                    <button type="button" id="resetFilters">
+                        Reset
+                    </button>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Categories</h3>
+
+                    <label>
+                        <input type="radio" name="category"
+                               value="all" checked>
+                        All Products
+                    </label>
+
+                    <label>
+                        <input type="radio" name="category"
+                               value="Keyboards">
+                        Keyboards
+                    </label>
+
+                    <label>
+                        <input type="radio" name="category"
+                               value="Mice">
+                        Mice
+                    </label>
+
+                    <label>
+                        <input type="radio" name="category"
+                               value="Headsets">
+                        Headsets
+                    </label>
+
+                    <label>
+                        <input type="radio" name="category"
+                               value="Accessories">
+                        Accessories
+                    </label>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Price Range (VND)</h3>
+
+                    <div class="price-inputs">
+                        <input type="number"
+                               id="minPrice"
+                               placeholder="Min"
+                               min="0"
+                               aria-label="Minimum price">
+
+                        <input type="number"
+                               id="maxPrice"
+                               placeholder="Max"
+                               min="0"
+                               aria-label="Maximum price">
+                    </div>
+
+                    <p id="filterError"
+                       class="filter-error"
+                       role="alert"></p>
+
+                    <button type="button"
+                            id="applyFilters"
+                            class="apply-filter-btn">
+                        Apply Filters
+                    </button>
+                </div>
+
+            </aside>
+
+            <!-- Product Results -->
+            <section class="catalog-results">
+
+                <div class="catalog-toolbar">
+
+                    <p id="productCount" aria-live="polite">
+                        Loading products...
+                    </p>
+
+                    <div class="sort-control">
+                        <label for="sortProducts">Sort by:</label>
+
+                        <select id="sortProducts">
+                            <option value="default">Default</option>
+                            <option value="price-asc">
+                                Price: Low to High
+                            </option>
+                            <option value="price-desc">
+                                Price: High to Low
+                            </option>
+                            <option value="name-asc">
+                                Name: A - Z
+                            </option>
+                            <option value="name-desc">
+                                Name: Z - A
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <p id="dataStatus"
+                   class="catalog-status"
+                   aria-live="polite"></p>
+
+                <div id="productGrid" class="catalog-grid">
+                    <!-- Products rendered by JavaScript -->
+                </div>
+
+                <div id="emptyState"
+                     class="catalog-empty"
+                     hidden>
+                    <h3>No products found</h3>
+                    <p>Try changing your search or filters.</p>
+
+                    <button type="button" id="clearEmptyFilters">
+                        Clear Filters
+                    </button>
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="catalog-footer">
+
+        <div class="catalog-container catalog-footer-grid">
+
+            <div>
+                <h3>TechGear</h3>
+                <p>
+                    Your trusted store for computer accessories.
+                </p>
+            </div>
+
+            <div>
+                <h3>Quick Links</h3>
+                <a href="index.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Shopping Cart</a>
+            </div>
+
+            <div>
+                <h3>Categories</h3>
+                <a href="products.html?category=Keyboards">Keyboards</a>
+                <a href="products.html?category=Mice">Mice</a>
+                <a href="products.html?category=Headsets">Headsets</a>
+                <a href="products.html?category=Accessories">Accessories</a>
+            </div>
+
+            <div>
+                <h3>Customer Support</h3>
+                <p>Contact our store for product assistance.</p>
+            </div>
+
+        </div>
+
+        <div class="catalog-footer-bottom">
+            &copy; 2026 TechGear. All rights reserved.
+        </div>
+
+    </footer>
+
+    <!-- JavaScript: API must load before Products -->
+    <script src="js/api.js" defer></script>
+<script src="js/auth.js" defer></script>
+<script src="js/products.js" defer></script>
+</body>
+</html>

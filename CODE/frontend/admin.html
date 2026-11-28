@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechGear - Admin</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #222;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2563eb;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 13px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #message {
+            margin-top: 18px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>TechGear Admin</h1>
+        <p>Chức năng tải ảnh sản phẩm lên hệ thống.</p>
+
+        <label>Admin JWT Token</label>
+        <input
+            type="password"
+            id="token"
+            placeholder="Dán token đăng nhập Admin vào đây"
+        >
+
+        <label>Mã sản phẩm (Product ID)</label>
+        <input
+            type="number"
+            id="productId"
+            placeholder="Nhập mã sản phẩm"
+            min="1"
+        >
+
+        <label>Chọn ảnh sản phẩm</label>
+        <input
+            type="file"
+            id="image"
+            accept=".jpg,.jpeg,.png,.webp"
+        >
+
+        <button onclick="uploadImage()">Tải ảnh lên</button>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:5262/api";
+
+        async function uploadImage() {
+            const token = document.getElementById("token").value.trim();
+            const productId = document.getElementById("productId").value;
+            const file = document.getElementById("image").files[0];
+            const message = document.getElementById("message");
+
+            if (!token || !productId || !file) {
+                message.textContent = "Vui lòng nhập đủ thông tin!";
+                message.style.color = "red";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", file);
+
+            try {
+                message.textContent = "Đang tải ảnh...";
+                message.style.color = "#2563eb";
+
+                const response = await fetch(
+                    `${API_URL}/products/${productId}/image`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: formData
+                    }
+                );
+
+                const data = await response.json().catch(() => null);
+
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error(
+                        "Bạn không có quyền Admin hoặc token không hợp lệ!"
+                    );
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data?.message || data?.title || "Tải ảnh thất bại!"
+                    );
+                }
+
+                message.textContent = "Tải ảnh lên thành công!";
+                message.style.color = "green";
+
+            } catch (error) {
+                message.textContent = error.message;
+                message.style.color = "red";
+            }
+        }
+    </script>
+</body>
+</html>

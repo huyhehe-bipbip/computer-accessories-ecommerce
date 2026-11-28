@@ -1,0 +1,213 @@
+
+/* =====================================
+   TECHGEAR - ACCOUNT PAGE
+===================================== */
+
+/* Ẩn phần tử có thuộc tính hidden */
+[hidden] {
+    display: none !important;
+}
+
+/* Main container */
+.account-container {
+    min-height: 650px;
+    padding: 55px 20px;
+    background: #f3f6fa;
+}
+
+/* Account card */
+.account-card {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 35px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+}
+
+/* Title */
+.account-card h1 {
+    margin: 0 0 10px;
+    color: #2563eb;
+    text-align: center;
+    font-size: 30px;
+}
+
+.account-subtitle {
+    margin-bottom: 28px;
+    color: #64748b;
+    text-align: center;
+    line-height: 1.6;
+}
+
+/* Form title */
+.account-card h2 {
+    margin: 0 0 22px;
+    color: #1e293b;
+    font-size: 22px;
+}
+
+/* Labels */
+.account-card label {
+    display: block;
+    margin: 15px 0 7px;
+    color: #334155;
+    font-weight: 600;
+}
+
+/* Input fields */
+.account-card input {
+    width: 100%;
+    min-height: 45px;
+    padding: 11px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    outline: none;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.account-card input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Primary buttons */
+.account-card form > button,
+.logout-button {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 24px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.account-card form > button:hover {
+    background: #1d4ed8;
+}
+
+.account-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Switch login/register */
+.switch-text {
+    margin-top: 22px;
+    color: #64748b;
+    text-align: center;
+}
+
+.switch-text button {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.switch-text button:hover {
+    text-decoration: underline;
+}
+
+/* Success and error messages */
+.account-message {
+    display: none;
+    margin: 15px 0;
+    padding: 12px;
+    border-radius: 7px;
+    line-height: 1.5;
+}
+
+.account-message.success {
+    display: block;
+    background: #dcfce7;
+    color: #166534;
+}
+
+.account-message.error {
+    display: block;
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Profile information */
+.profile-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.profile-row span {
+    color: #64748b;
+}
+
+.profile-row strong {
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+/* Admin link */
+#admin-link {
+    display: block;
+    margin-top: 20px;
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+#admin-link:hover {
+    text-decoration: underline;
+}
+
+/* Continue shopping */
+.continue-shopping {
+    display: block;
+    margin-top: 20px;
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.continue-shopping:hover {
+    text-decoration: underline;
+}
+
+/* Logout */
+.logout-button {
+    background: #dc2626;
+}
+
+.logout-button:hover {
+    background: #b91c1c;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+    .account-card {
+        padding: 24px 18px;
+    }
+
+    .account-card h1 {
+        font-size: 25px;
+    }
+
+    .profile-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .profile-row strong {
+        text-align: left;
+    }
+}

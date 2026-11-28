@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TechGear Member Account">
+    <title>TechGear | Account</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/account.css">
+
+    <script src="js/api.js" defer></script>
+    <script src="js/auth.js" defer></script>
+</head>
+
+<body>
+    <div class="top-bar">
+        Welcome to TechGear - Your Computer Accessories Store
+    </div>
+
+    <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">Tech<span>Gear</span></a>
+
+            <div class="header-actions">
+                <a href="index.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Cart</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="account-container">
+        <section class="account-card">
+            <h1>TechGear Account</h1>
+            <p class="account-subtitle">
+                Đăng nhập hoặc tạo tài khoản để nhận ưu đãi thành viên.
+            </p>
+
+            <div id="account-message" class="account-message"
+                 role="status" aria-live="polite"></div>
+
+            <!-- LOGIN -->
+            <form id="login-form">
+                <h2>Đăng nhập</h2>
+
+                <label for="login-email">Email</label>
+                <input
+                    type="email"
+                    id="login-email"
+                    placeholder="Nhập email"
+                    autocomplete="email"
+                    required
+                >
+
+                <label for="login-password">Mật khẩu</label>
+                <input
+                    type="password"
+                    id="login-password"
+                    placeholder="Nhập mật khẩu"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <button type="submit" id="login-button">
+                    Đăng nhập
+                </button>
+
+                <p class="switch-text">
+                    Chưa có tài khoản?
+                    <button type="button" id="show-register">
+                        Đăng ký ngay
+                    </button>
+                </p>
+            </form>
+
+            <!-- REGISTER -->
+            <form id="register-form" hidden>
+                <h2>Tạo tài khoản Member</h2>
+
+                <label for="register-name">Họ và tên</label>
+                <input
+                    type="text"
+                    id="register-name"
+                    placeholder="Nhập họ và tên"
+                    autocomplete="name"
+                    required
+                >
+
+                <label for="register-email">Email</label>
+                <input
+                    type="email"
+                    id="register-email"
+                    placeholder="Nhập email"
+                    autocomplete="email"
+                    required
+                >
+
+                <label for="register-phone">Số điện thoại</label>
+                <input
+                    type="tel"
+                    id="register-phone"
+                    placeholder="Nhập số điện thoại"
+                    autocomplete="tel"
+                >
+
+                <label for="register-password">Mật khẩu</label>
+                <input
+                    type="password"
+                    id="register-password"
+                    placeholder="Tối thiểu 6 ký tự"
+                    minlength="6"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <label for="confirm-password">Xác nhận mật khẩu</label>
+                <input
+                    type="password"
+                    id="confirm-password"
+                    placeholder="Nhập lại mật khẩu"
+                    minlength="6"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <button type="submit" id="register-button">
+                    Đăng ký Member
+                </button>
+
+                <p class="switch-text">
+                    Đã có tài khoản?
+                    <button type="button" id="show-login">
+                        Đăng nhập
+                    </button>
+                </p>
+            </form>
+
+            <!-- ACCOUNT INFORMATION -->
+            <section id="profile-section" hidden>
+                <h2>Thông tin tài khoản</h2>
+
+                <div class="profile-row">
+                    <span>Họ và tên</span>
+                    <strong id="profile-name"></strong>
+                </div>
+
+                <div class="profile-row">
+                    <span>Email</span>
+                    <strong id="profile-email"></strong>
+                </div>
+
+                <div class="profile-row">
+                    <span>Vai trò</span>
+                    <strong id="profile-role"></strong>
+                </div>
+
+                <a href="admin.html" id="admin-link" hidden>
+                    Đi đến trang quản trị Admin
+                </a>
+
+                <a href="products.html" class="continue-shopping">
+                    Tiếp tục mua sắm
+                </a>
+
+                <button type="button" id="logout-button"
+                        class="logout-button">
+                    Đăng xuất
+                </button>
+            </section>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            &copy; <span id="current-year"></span> TechGear.
+            All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>
