@@ -7,157 +7,1124 @@
     <title>TechGear - Admin</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            padding: 30px;
+            padding: 25px;
             font-family: Arial, sans-serif;
             background: #f3f4f6;
             color: #222;
         }
 
         .container {
-            max-width: 650px;
-            margin: 40px auto;
-            padding: 30px;
+            max-width: 1200px;
+            margin: 25px auto;
+            padding: 28px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 15px rgba(0,0,0,.08);
         }
 
-        h1 {
-            text-align: center;
-            color: #2563eb;
-        }
+        h1, h2 { color: #2563eb; }
+        h1 { text-align: center; }
 
         label {
             display: block;
-            margin-top: 18px;
-            margin-bottom: 8px;
+            margin: 15px 0 7px;
             font-weight: bold;
         }
 
-        input {
+        input, textarea, select {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border: 1px solid #ccc;
             border-radius: 6px;
+            font-size: 15px;
+        }
+
+        textarea {
+            min-height: 75px;
+            resize: vertical;
         }
 
         button {
-            width: 100%;
-            margin-top: 22px;
-            padding: 13px;
+            padding: 11px 16px;
             border: none;
             border-radius: 6px;
             background: #2563eb;
             color: white;
-            font-size: 16px;
             cursor: pointer;
+            font-size: 14px;
         }
 
-        button:hover {
-            background: #1d4ed8;
+        button:hover { background: #1d4ed8; }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
         }
 
-        #message {
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group { min-width: 0; }
+        .full-width { grid-column: 1 / -1; }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .delete-btn { background: #dc2626; }
+        .delete-btn:hover { background: #b91c1c; }
+
+        .edit-btn { background: #0f766e; }
+        .edit-btn:hover { background: #115e59; }
+
+        .cancel-btn { background: #64748b; }
+
+        .section-title {
+            margin-top: 35px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table-wrapper { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 18px;
-            text-align: center;
+            min-width: 750px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th { background: #eff6ff; }
+
+        .product-image {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            background: #f1f5f9;
+            border-radius: 6px;
+        }
+
+        .image-input {
+            max-width: 180px;
+            font-size: 12px;
+        }
+
+        .image-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 160px;
+        }
+
+        .image-upload button { padding: 7px; }
+
+        .token-box {
+            background: #eff6ff;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        .hint {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .message {
+            margin-top: 15px;
             font-weight: bold;
+            white-space: pre-wrap;
+        }
+
+        .detail-box {
+            display: none;
+            margin-top: 20px;
+            padding: 18px;
+            background: #f8fafc;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 650px) {
+            body { padding: 10px; }
+            .container { padding: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: auto; }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>TechGear Admin</h1>
-        <p>Chức năng tải ảnh sản phẩm lên hệ thống.</p>
 
+<div class="container">
+
+    <h1>TechGear Admin</h1>
+    <p style="text-align:center">
+        Quản lý sản phẩm và đơn hàng cửa hàng TechGear
+    </p>
+
+    <!-- ADMIN TOKEN -->
+    <div class="token-box">
         <label>Admin JWT Token</label>
+
         <input
             type="password"
             id="token"
             placeholder="Dán token đăng nhập Admin vào đây"
         >
 
-        <label>Mã sản phẩm (Product ID)</label>
-        <input
-            type="number"
-            id="productId"
-            placeholder="Nhập mã sản phẩm"
-            min="1"
-        >
+        <p class="hint">
+            Token được sử dụng để xác thực các thao tác quản trị.
+        </p>
 
-        <label>Chọn ảnh sản phẩm</label>
-        <input
-            type="file"
-            id="image"
-            accept=".jpg,.jpeg,.png,.webp"
-        >
+        <div class="actions">
+            <button type="button" onclick="loadProducts()">
+                Tải danh sách sản phẩm
+            </button>
 
-        <button onclick="uploadImage()">Tải ảnh lên</button>
-
-        <div id="message"></div>
+            <button type="button" onclick="loadOrders()">
+                Tải danh sách đơn hàng
+            </button>
+        </div>
     </div>
 
-    <script>
-        const API_URL = "http://localhost:5262/api";
+    <!-- PRODUCT FORM -->
+    <h2 class="section-title" id="formTitle">
+        Thêm sản phẩm mới
+    </h2>
 
-        async function uploadImage() {
-            const token = document.getElementById("token").value.trim();
-            const productId = document.getElementById("productId").value;
-            const file = document.getElementById("image").files[0];
-            const message = document.getElementById("message");
+    <form id="productForm">
+        <div class="form-grid">
 
-            if (!token || !productId || !file) {
-                message.textContent = "Vui lòng nhập đủ thông tin!";
-                message.style.color = "red";
-                return;
-            }
+            <div class="form-group full-width">
+                <label>Tên sản phẩm</label>
+                <input
+                    type="text"
+                    id="productName"
+                    required
+                    placeholder="Nhập tên sản phẩm"
+                >
+            </div>
 
-            const formData = new FormData();
-            formData.append("image", file);
+            <div class="form-group full-width">
+                <label>Mô tả sản phẩm</label>
+                <textarea
+                    id="description"
+                    placeholder="Nhập mô tả sản phẩm"
+                ></textarea>
+            </div>
 
-            try {
-                message.textContent = "Đang tải ảnh...";
-                message.style.color = "#2563eb";
+            <div class="form-group">
+                <label>Giá khách thường (VND)</label>
+                <input
+                    type="number"
+                    id="guestPrice"
+                    min="0"
+                    step="1000"
+                    required
+                >
+            </div>
 
-                const response = await fetch(
-                    `${API_URL}/products/${productId}/image`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: formData
-                    }
-                );
+            <div class="form-group">
+                <label>Giá Member (VND)</label>
+                <input
+                    type="number"
+                    id="memberPrice"
+                    min="0"
+                    step="1000"
+                    required
+                >
+            </div>
 
-                const data = await response.json().catch(() => null);
+            <div class="form-group">
+                <label>Số lượng tồn kho</label>
+                <input
+                    type="number"
+                    id="stock"
+                    min="0"
+                    required
+                >
+            </div>
 
-                if (response.status === 401 || response.status === 403) {
-                    throw new Error(
-                        "Bạn không có quyền Admin hoặc token không hợp lệ!"
-                    );
-                }
+            <div class="form-group">
+                <label>Danh mục sản phẩm</label>
+                <select id="categoryId" required>
+                    <option value="">Đang tải danh mục...</option>
+                </select>
+            </div>
 
-                if (!response.ok) {
-                    throw new Error(
-                        data?.message || data?.title || "Tải ảnh thất bại!"
-                    );
-                }
+        </div>
 
-                message.textContent = "Tải ảnh lên thành công!";
-                message.style.color = "green";
+        <div class="actions">
+            <button type="submit" id="saveButton">
+                Thêm sản phẩm
+            </button>
 
-            } catch (error) {
-                message.textContent = error.message;
-                message.style.color = "red";
-            }
+            <button
+                type="button"
+                class="cancel-btn"
+                id="cancelButton"
+                onclick="resetForm()"
+                style="display:none"
+            >
+                Hủy chỉnh sửa
+            </button>
+        </div>
+    </form>
+
+    <div id="message" class="message"></div>
+
+    <!-- PRODUCT LIST -->
+    <h2 class="section-title">Danh sách sản phẩm</h2>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Giá khách</th>
+                    <th>Giá Member</th>
+                    <th>Tồn kho</th>
+                    <th>Danh mục</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody id="productList">
+                <tr>
+                    <td colspan="8">
+                        Nhấn "Tải danh sách sản phẩm" để xem.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ORDER MANAGEMENT -->
+    <h2 class="section-title">Quản lý đơn hàng</h2>
+
+    <p class="hint">
+        Quản lý đơn hàng của khách hàng và cập nhật trạng thái giao hàng.
+    </p>
+
+    <div id="orderMessage" class="message"></div>
+
+    <div class="table-wrapper">
+        <table style="min-width:1000px">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Tổng tiền</th>
+                    <th>Ngày đặt</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody id="orderList">
+                <tr>
+                    <td colspan="8">
+                        Nhấn "Tải danh sách đơn hàng" để xem.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ORDER DETAIL -->
+    <div id="orderDetail" class="detail-box">
+        <h3 id="orderDetailTitle">Chi tiết đơn hàng</h3>
+        <div id="orderDetailContent"></div>
+    </div>
+
+</div>
+
+<script>
+    const API_URL = "http://localhost:5262/api";
+
+    let products = [];
+    let categories = [];
+    let orders = [];
+    let editingId = null;
+
+    const $ = id => document.getElementById(id);
+
+    // =====================================
+    // TOKEN
+    // =====================================
+
+    function getToken() {
+        return $("token").value.trim();
+    }
+
+    // =====================================
+    // MESSAGE
+    // =====================================
+
+    function showMessage(message, success = false) {
+        $("message").textContent = message;
+        $("message").style.color = success ? "green" : "red";
+    }
+
+    function showOrderMessage(message, success = false) {
+        $("orderMessage").textContent = message;
+        $("orderMessage").style.color = success ? "green" : "red";
+    }
+
+    // =====================================
+    // COMMON FUNCTIONS
+    // =====================================
+
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        })[char]);
+    }
+
+    function formatPrice(value) {
+        return Number(value || 0).toLocaleString("vi-VN") + " đ";
+    }
+
+    function formatDate(value) {
+        if (!value) return "";
+
+        const date = new Date(value);
+
+        return Number.isNaN(date.getTime())
+            ? escapeHTML(value)
+            : date.toLocaleString("vi-VN");
+    }
+
+    // =====================================
+    // API REQUEST
+    // =====================================
+
+    async function apiRequest(endpoint, options = {}) {
+        const headers = {
+            ...(options.headers || {})
+        };
+
+        if (
+            options.body &&
+            !(options.body instanceof FormData)
+        ) {
+            headers["Content-Type"] = "application/json";
         }
-    </script>
+
+        const response = await fetch(API_URL + endpoint, {
+            ...options,
+            headers
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+            if (
+                response.status === 401 ||
+                response.status === 403
+            ) {
+                throw new Error(
+                    "Token không hợp lệ hoặc tài khoản không có quyền Admin."
+                );
+            }
+
+            throw new Error(
+                data?.message ||
+                data?.title ||
+                `Lỗi API: ${response.status}`
+            );
+        }
+
+        return data;
+    }
+
+    // =====================================
+    // LOAD CATEGORIES
+    // =====================================
+
+    async function loadCategories() {
+        try {
+            const data = await apiRequest("/categories");
+
+            categories = Array.isArray(data) ? data : [];
+
+            $("categoryId").innerHTML =
+                '<option value="">-- Chọn danh mục --</option>';
+
+            categories.forEach(category => {
+                const id = category.category_id ?? category.id;
+                const name = category.category_name ?? category.name;
+
+                if (id == null) return;
+
+                const option = document.createElement("option");
+
+                option.value = id;
+                option.textContent = name || `Danh mục ${id}`;
+
+                $("categoryId").appendChild(option);
+            });
+
+        } catch (error) {
+            $("categoryId").innerHTML =
+                '<option value="">Không tải được danh mục</option>';
+
+            showMessage(
+                "Không tải được danh mục: " + error.message
+            );
+        }
+    }
+
+    // =====================================
+    // LOAD PRODUCTS
+    // =====================================
+
+    async function loadProducts() {
+        try {
+            const data = await apiRequest("/products");
+
+            products = Array.isArray(data) ? data : [];
+
+            renderProducts();
+
+            showMessage(
+                "Đã tải " + products.length + " sản phẩm thành công.",
+                true
+            );
+
+        } catch (error) {
+            showMessage(
+                "Không tải được sản phẩm: " + error.message
+            );
+        }
+    }
+
+    // =====================================
+    // RENDER PRODUCTS
+    // =====================================
+
+    function renderProducts() {
+        const tbody = $("productList");
+
+        if (!products.length) {
+            tbody.innerHTML =
+                '<tr><td colspan="8">Chưa có sản phẩm.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = products.map(product => {
+            const id = Number(product.product_id);
+
+            const category = categories.find(c =>
+                String(c.category_id ?? c.id) ===
+                String(product.category_id)
+            );
+
+            const categoryName = category
+                ? (category.category_name ?? category.name)
+                : product.category_id;
+
+            const imageUrl = product.image_url
+                ? `http://localhost:5262${product.image_url.startsWith("/") ? "" : "/"}${product.image_url}`
+                : "";
+
+            return `
+                <tr>
+                    <td>${escapeHTML(id)}</td>
+
+                    <td>
+                        ${
+                            imageUrl
+                            ? `<img class="product-image" src="${escapeHTML(imageUrl)}" alt="Product">`
+                            : "Chưa có ảnh"
+                        }
+                    </td>
+
+                    <td>${escapeHTML(product.product_name)}</td>
+                    <td>${formatPrice(product.guest_price)}</td>
+                    <td>${formatPrice(product.member_price)}</td>
+                    <td>${escapeHTML(product.stock_quantity)}</td>
+                    <td>${escapeHTML(categoryName)}</td>
+
+                    <td>
+                        <div class="actions">
+                            <button
+                                class="edit-btn"
+                                onclick="editProduct(${id})"
+                            >
+                                Sửa
+                            </button>
+
+                            <button
+                                class="delete-btn"
+                                onclick="deleteProduct(${id})"
+                            >
+                                Xóa
+                            </button>
+                        </div>
+
+                        <div class="image-upload">
+                            <input
+                                type="file"
+                                class="image-input"
+                                id="image-${id}"
+                                accept=".jpg,.jpeg,.png,.webp"
+                            >
+
+                            <button
+                                type="button"
+                                onclick="uploadImage(${id})"
+                            >
+                                Tải ảnh lên
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    // =====================================
+    // ADD / UPDATE PRODUCT
+    // =====================================
+
+    $("productForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const token = getToken();
+
+        if (!token) {
+            showMessage("Vui lòng nhập Admin JWT Token!");
+            return;
+        }
+
+        const product = {
+            product_name: $("productName").value.trim(),
+            description: $("description").value.trim(),
+            guest_price: Number($("guestPrice").value),
+            member_price: Number($("memberPrice").value),
+            stock_quantity: Number($("stock").value),
+            category_id: Number($("categoryId").value)
+        };
+
+        if (!product.product_name || !product.category_id) {
+            showMessage(
+                "Vui lòng nhập tên và chọn danh mục sản phẩm!"
+            );
+            return;
+        }
+
+        if (
+            product.guest_price < 0 ||
+            product.member_price < 0 ||
+            product.stock_quantity < 0
+        ) {
+            showMessage(
+                "Giá và số lượng không được nhỏ hơn 0!"
+            );
+            return;
+        }
+
+        const endpoint = editingId === null
+            ? "/products"
+            : `/products/${editingId}`;
+
+        const method = editingId === null ? "POST" : "PUT";
+
+        try {
+            $("saveButton").disabled = true;
+            $("saveButton").textContent = "Đang lưu...";
+
+            await apiRequest(endpoint, {
+                method,
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(product)
+            });
+
+            showMessage(
+                editingId === null
+                    ? "Thêm sản phẩm thành công!"
+                    : "Cập nhật sản phẩm thành công!",
+                true
+            );
+
+            resetForm();
+            await loadProducts();
+
+        } catch (error) {
+            showMessage(error.message);
+
+        } finally {
+            $("saveButton").disabled = false;
+
+            $("saveButton").textContent =
+                editingId === null
+                    ? "Thêm sản phẩm"
+                    : "Lưu thay đổi";
+        }
+    });
+
+    // =====================================
+    // EDIT PRODUCT
+    // =====================================
+
+    function editProduct(id) {
+        const product = products.find(
+            p => Number(p.product_id) === Number(id)
+        );
+
+        if (!product) {
+            showMessage("Không tìm thấy sản phẩm!");
+            return;
+        }
+
+        editingId = id;
+
+        $("productName").value = product.product_name || "";
+        $("description").value = product.description || "";
+        $("guestPrice").value = product.guest_price ?? 0;
+        $("memberPrice").value = product.member_price ?? 0;
+        $("stock").value = product.stock_quantity ?? 0;
+        $("categoryId").value = product.category_id ?? "";
+
+        $("formTitle").textContent =
+            "Chỉnh sửa sản phẩm #" + id;
+
+        $("saveButton").textContent = "Lưu thay đổi";
+        $("cancelButton").style.display = "inline-block";
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        showMessage(
+            "Đang chỉnh sửa sản phẩm #" + id,
+            true
+        );
+    }
+
+    // =====================================
+    // RESET FORM
+    // =====================================
+
+    function resetForm() {
+        editingId = null;
+
+        $("productForm").reset();
+
+        $("formTitle").textContent = "Thêm sản phẩm mới";
+        $("saveButton").textContent = "Thêm sản phẩm";
+        $("cancelButton").style.display = "none";
+    }
+
+    // =====================================
+    // DELETE PRODUCT
+    // =====================================
+
+    async function deleteProduct(id) {
+        const token = getToken();
+
+        if (!token) {
+            showMessage("Vui lòng nhập Admin JWT Token!");
+            return;
+        }
+
+        const confirmed = confirm(
+            "Bạn có chắc chắn muốn xóa sản phẩm #" + id + " không?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await apiRequest(`/products/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            showMessage("Xóa sản phẩm thành công!", true);
+
+            if (editingId === id) {
+                resetForm();
+            }
+
+            await loadProducts();
+
+        } catch (error) {
+            showMessage(error.message);
+        }
+    }
+
+    // =====================================
+    // UPLOAD PRODUCT IMAGE
+    // =====================================
+
+    async function uploadImage(id) {
+        const token = getToken();
+        const fileInput = $(`image-${id}`);
+        const file = fileInput?.files[0];
+
+        if (!token) {
+            showMessage("Vui lòng nhập Admin JWT Token!");
+            return;
+        }
+
+        if (!file) {
+            showMessage("Vui lòng chọn ảnh sản phẩm!");
+            return;
+        }
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            showMessage("Chỉ chấp nhận JPG, PNG hoặc WEBP!");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            await apiRequest(`/products/${id}/image`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            showMessage(
+                "Tải ảnh sản phẩm #" + id + " thành công!",
+                true
+            );
+
+            await loadProducts();
+
+        } catch (error) {
+            showMessage(error.message);
+        }
+    }
+
+    // =====================================
+    // LOAD ORDERS
+    // =====================================
+
+    async function loadOrders() {
+        const token = getToken();
+
+        if (!token) {
+            showOrderMessage(
+                "Vui lòng nhập Admin JWT Token trước khi tải đơn hàng."
+            );
+            return;
+        }
+
+        try {
+            const data = await apiRequest("/orders", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            orders = Array.isArray(data) ? data : [];
+
+            renderOrders();
+
+            showOrderMessage(
+                `Đã tải ${orders.length} đơn hàng thành công.`,
+                true
+            );
+
+        } catch (error) {
+            showOrderMessage(
+                "Không tải được đơn hàng: " + error.message
+            );
+        }
+    }
+
+    // =====================================
+    // RENDER ORDERS
+    // =====================================
+
+    function renderOrders() {
+        const tbody = $("orderList");
+
+        if (!orders.length) {
+            tbody.innerHTML =
+                '<tr><td colspan="8">Chưa có đơn hàng.</td></tr>';
+            return;
+        }
+
+        const statuses = [
+            "Pending",
+            "Processing",
+            "Shipping",
+            "Completed",
+            "Cancelled"
+        ];
+
+        tbody.innerHTML = orders.map(order => {
+            const id = Number(order.order_id);
+            const current = order.order_status || "Pending";
+
+            const options = statuses.map(status => `
+                <option
+                    value="${status}"
+                    ${status.toLowerCase() === String(current).toLowerCase() ? "selected" : ""}
+                >
+                    ${status}
+                </option>
+            `).join("");
+
+            return `
+                <tr>
+                    <td>TG-${escapeHTML(id)}</td>
+                    <td>${escapeHTML(order.customer_name)}</td>
+                    <td>${escapeHTML(order.phone_number)}</td>
+                    <td>${escapeHTML(order.shipping_address)}</td>
+                    <td>${formatPrice(order.total_amount)}</td>
+                    <td>${formatDate(order.created_at)}</td>
+
+                    <td>
+                        <select
+                            id="order-status-${id}"
+                            style="min-width:130px"
+                        >
+                            ${options}
+                        </select>
+                    </td>
+
+                    <td>
+                        <div class="actions">
+                            <button
+                                type="button"
+                                class="edit-btn"
+                                onclick="viewOrder(${id})"
+                            >
+                                Chi tiết
+                            </button>
+
+                            <button
+                                type="button"
+                                onclick="updateOrderStatus(${id})"
+                            >
+                                Lưu trạng thái
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    // =====================================
+    // VIEW ORDER DETAIL
+    // =====================================
+
+    async function viewOrder(id) {
+        const token = getToken();
+
+        if (!token) {
+            showOrderMessage("Vui lòng nhập Admin JWT Token!");
+            return;
+        }
+
+        try {
+            const order = await apiRequest(`/orders/${id}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const items = Array.isArray(order.order_items)
+                ? order.order_items
+                : [];
+
+            const rows = items.map(item => `
+                <tr>
+                    <td>
+                        ${escapeHTML(
+                            item.product_name ||
+                            ("Sản phẩm #" + item.product_id)
+                        )}
+                    </td>
+
+                    <td>${escapeHTML(item.quantity)}</td>
+                    <td>${formatPrice(item.unit_price)}</td>
+
+                    <td>
+                        ${formatPrice(
+                            Number(item.unit_price || 0) *
+                            Number(item.quantity || 0)
+                        )}
+                    </td>
+                </tr>
+            `).join("");
+
+            $("orderDetailTitle").textContent =
+                `Chi tiết đơn hàng TG-${id}`;
+
+            $("orderDetailContent").innerHTML = `
+                <p>
+                    <strong>Khách hàng:</strong>
+                    ${escapeHTML(order.customer_name)}
+                </p>
+
+                <p>
+                    <strong>Số điện thoại:</strong>
+                    ${escapeHTML(order.phone_number)}
+                </p>
+
+                <p>
+                    <strong>Địa chỉ:</strong>
+                    ${escapeHTML(order.shipping_address)}
+                </p>
+
+                <p>
+                    <strong>Trạng thái:</strong>
+                    ${escapeHTML(order.order_status)}
+                </p>
+
+                <div class="table-wrapper">
+                    <table style="min-width:550px">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            ${
+                                rows ||
+                                '<tr><td colspan="4">Không có sản phẩm.</td></tr>'
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <p>
+                    <strong>Tổng thanh toán:</strong>
+                    ${formatPrice(order.total_amount)}
+                </p>
+            `;
+
+            $("orderDetail").style.display = "block";
+
+            $("orderDetail").scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            showOrderMessage(
+                `Đã tải chi tiết đơn hàng TG-${id}.`,
+                true
+            );
+
+        } catch (error) {
+            showOrderMessage(
+                "Không tải được chi tiết đơn hàng: " + error.message
+            );
+        }
+    }
+
+    // =====================================
+    // UPDATE ORDER STATUS
+    // =====================================
+
+    async function updateOrderStatus(id) {
+        const token = getToken();
+
+        if (!token) {
+            showOrderMessage("Vui lòng nhập Admin JWT Token!");
+            return;
+        }
+
+        const select = $(`order-status-${id}`);
+        const newStatus = select?.value;
+
+        if (!newStatus) {
+            showOrderMessage(
+                "Không đọc được trạng thái đơn hàng."
+            );
+            return;
+        }
+
+        if (!confirm(
+            `Bạn có chắc muốn cập nhật đơn TG-${id} thành "${newStatus}" không?`
+        )) {
+            return;
+        }
+
+        try {
+            await apiRequest(`/orders/${id}/status`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    order_status: newStatus
+                })
+            });
+
+            showOrderMessage(
+                `Cập nhật đơn TG-${id} thành "${newStatus}" thành công.`,
+                true
+            );
+
+            await loadOrders();
+
+        } catch (error) {
+            showOrderMessage(
+                "Không cập nhật được trạng thái: " + error.message
+            );
+        }
+    }
+
+    // =====================================
+    // INITIALIZE
+    // =====================================
+
+    loadCategories();
+
+</script>
+
 </body>
 </html>

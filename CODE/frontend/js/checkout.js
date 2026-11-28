@@ -1,3 +1,4 @@
+
 "use strict";
 
 // =========================================
@@ -6,6 +7,7 @@
 
 const CART_STORAGE_KEY = "techgear_cart";
 const SHIPPING_FEE = 30000;
+const BACKEND_URL = "http://localhost:5262";
 
 const $ = id => document.getElementById(id);
 
@@ -31,7 +33,7 @@ function getCart() {
 }
 
 // =========================================
-// PRICE CALCULATION
+// PRICE AND IMAGE HELPERS
 // =========================================
 
 function formatPrice(price) {
@@ -43,6 +45,36 @@ function formatPrice(price) {
 
 function getUnitPrice(item) {
     return Number(item.price);
+}
+
+// Chuan hoa duong dan anh tu Backend.
+function getCheckoutImageUrl(imagePath) {
+    if (!imagePath) {
+        return "";
+    }
+
+    const path = String(imagePath).trim();
+
+    if (!path) {
+        return "";
+    }
+
+    // Neu anh da co URL day du thi giu nguyen.
+    if (/^(https?:\/\/|data:|blob:)/i.test(path)) {
+        return path;
+    }
+
+    let cleanPath = path.replace(/\\/g, "/");
+
+    // Loai bo wwwroot neu duong dan co chua.
+    cleanPath = cleanPath.replace(/^.*?wwwroot\//i, "");
+
+    // Loai bo dau ./ va dau / o dau duong dan.
+    cleanPath = cleanPath.replace(/^\.?\//, "");
+    cleanPath = cleanPath.replace(/^\/+/, "");
+
+    // Anh duoc phuc vu tu ASP.NET Core Backend.
+    return `${BACKEND_URL}/${cleanPath}`;
 }
 
 function calculateQuantity() {
@@ -95,7 +127,7 @@ function initializeCustomer() {
     $("customerNotice").textContent =
         "You can place an order without creating an account.";
 
-    // Features awaiting backend integration.
+    // Coupon chua duoc tich hop Backend.
     $("couponCode").disabled = true;
     $("applyCoupon").disabled = true;
     $("removeCoupon").hidden = true;
@@ -153,11 +185,23 @@ async function refreshCartProducts() {
             price: product.guestPrice,
             memberPrice: product.memberPrice,
             stock: product.stock,
-            image: product.image
+
+            // Lay anh moi nhat tu Database va chuan hoa URL.
+            image: getCheckoutImageUrl(product.image)
         };
     });
 
     cart = updatedCart;
+
+    // Cap nhat lai gio hang trong Local Storage.
+    try {
+        localStorage.setItem(
+            CART_STORAGE_KEY,
+            JSON.stringify(cart)
+        );
+    } catch (error) {
+        console.error("Unable to update cart storage:", error);
+    }
 }
 
 // =========================================
@@ -218,16 +262,30 @@ function renderOrderItems() {
         const row = document.createElement("div");
         row.className = "order-item";
 
+        // IMAGE
         const imageBox = document.createElement("div");
         imageBox.className = "order-image";
 
-        if (item.image) {
+        const imageUrl = getCheckoutImageUrl(item.image);
+
+        if (imageUrl) {
             const image = document.createElement("img");
 
-            image.src = item.image;
+            image.src = imageUrl;
             image.alt = item.name;
+            image.loading = "lazy";
+
+            image.style.width = "100%";
+            image.style.height = "100%";
+            image.style.objectFit = "contain";
 
             image.addEventListener("error", () => {
+                console.error(
+                    "Cannot load product image:",
+                    imageUrl
+                );
+
+                image.remove();
                 imageBox.textContent = item.icon || "📦";
             });
 
@@ -236,6 +294,7 @@ function renderOrderItems() {
             imageBox.textContent = item.icon || "📦";
         }
 
+        // PRODUCT INFORMATION
         const info = document.createElement("div");
         info.className = "order-info";
 
@@ -252,6 +311,7 @@ function renderOrderItems() {
 
         info.append(name, quantity, unitPrice);
 
+        // TOTAL PRICE
         const price = document.createElement("div");
         price.className = "order-price";
 
@@ -447,6 +507,7 @@ async function placeOrder(event) {
     try {
         const previousTotal = calculateTotals().total;
 
+        // Lay lai gia, ton kho va anh moi nhat tu Backend.
         await refreshCartProducts();
 
         renderCheckout();
@@ -469,7 +530,7 @@ async function placeOrder(event) {
 
         const orderData = createOrderRequest(customer);
 
-        // Send HTTP POST to ASP.NET Core Backend.
+        // Gui HTTP POST den ASP.NET Core Backend.
         const order = await TechGearAPI.createOrder(
             orderData
         );
@@ -480,7 +541,7 @@ async function placeOrder(event) {
             );
         }
 
-        // Clear cart only after backend confirms success.
+        // Chi xoa gio hang sau khi Backend xac nhan thanh cong.
         try {
             localStorage.removeItem(CART_STORAGE_KEY);
         } catch (storageError) {
@@ -491,7 +552,6 @@ async function placeOrder(event) {
         }
 
         cart = [];
-
         isReady = false;
 
         showOrderSuccess(order);
@@ -581,5 +641,9 @@ window.addEventListener("storage", event => {
         window.location.reload();
     }
 });
+
+// =========================================
+// START CHECKOUT
+// =========================================
 
 initializeCheckout();

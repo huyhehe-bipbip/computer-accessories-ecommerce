@@ -11,6 +11,20 @@ var builder = WebApplication.CreateBuilder(args);
 // ==========================================
 builder.Services.AddControllers();
 
+// Cấu hình CORS cho Frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins(
+            "http://127.0.0.1:5500",
+            "http://localhost:5500"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
 // ==========================================
 // 2. KẾT NỐI SQL SERVER
 // ==========================================
@@ -126,6 +140,10 @@ if (app.Environment.IsDevelopment())
 // ==========================================
 app.UseHttpsRedirection();
 
+// Cho phép truy cập hình ảnh trong wwwroot
+app.UseStaticFiles();
+
+app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 

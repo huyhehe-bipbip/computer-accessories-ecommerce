@@ -1,6 +1,11 @@
 
 const TechGearAPI = (() => {
     const BASE_URL = "http://localhost:5262/api";
+    const IMAGE_BASE_URL = "http://localhost:5262";
+
+    // =========================================
+    // API REQUEST
+    // =========================================
 
     async function request(endpoint, options = {}) {
         const headers = {
@@ -8,7 +13,10 @@ const TechGearAPI = (() => {
             ...options.headers
         };
 
-        if (options.body !== undefined && !(options.body instanceof FormData)) {
+        if (
+            options.body !== undefined &&
+            !(options.body instanceof FormData)
+        ) {
             headers["Content-Type"] = "application/json";
         }
 
@@ -31,12 +39,51 @@ const TechGearAPI = (() => {
         return data;
     }
 
+    // =========================================
+    // IMAGE URL
+    // =========================================
+
+    function normalizeImageUrl(imagePath) {
+        if (!imagePath) {
+            return "";
+        }
+
+        const path = String(imagePath).trim();
+
+        if (!path) {
+            return "";
+        }
+
+        // Giu nguyen URL day du.
+        if (/^(https?:\/\/|data:|blob:)/i.test(path)) {
+            return path;
+        }
+
+        let cleanPath = path.replace(/\\/g, "/");
+
+        // Loai bo wwwroot neu co.
+        cleanPath = cleanPath.replace(/^.*?wwwroot\//i, "");
+
+        // Chuan hoa duong dan.
+        cleanPath = cleanPath.replace(/^\.?\//, "");
+        cleanPath = cleanPath.replace(/^\/+/, "");
+
+        return `${IMAGE_BASE_URL}/${cleanPath}`;
+    }
+
+    // =========================================
+    // NORMALIZE PRODUCT
+    // =========================================
+
     function normalizeProduct(product) {
         return {
             id: product.product_id,
             name: product.product_name,
             description: product.description || "",
-            image: product.image_url || "",
+
+            // Chuyen image_url thanh URL day du.
+            image: normalizeImageUrl(product.image_url),
+
             guestPrice: product.guest_price,
             memberPrice: product.member_price,
             displayPrice: product.display_price,
@@ -45,8 +92,13 @@ const TechGearAPI = (() => {
         };
     }
 
+    // =========================================
+    // PRODUCTS
+    // =========================================
+
     async function getProducts() {
         const products = await request("/products");
+
         return products.map(normalizeProduct);
     }
 
@@ -58,6 +110,10 @@ const TechGearAPI = (() => {
         return normalizeProduct(product);
     }
 
+    // =========================================
+    // CATEGORIES
+    // =========================================
+
     async function getCategories() {
         return await request("/categories");
     }
@@ -68,6 +124,10 @@ const TechGearAPI = (() => {
         );
     }
 
+    // =========================================
+    // ORDERS
+    // =========================================
+
     async function createOrder(orderData) {
         return await request("/orders", {
             method: "POST",
@@ -75,14 +135,20 @@ const TechGearAPI = (() => {
         });
     }
 
+    // =========================================
+    // EXPORT
+    // =========================================
+
     return {
         getProducts,
         getProductById,
         getCategories,
         getCategoryById,
-        createOrder
+        createOrder,
+        normalizeImageUrl
     };
+
 })();
 
-// Cho phép các file JavaScript khác sử dụng API
+// Cho phep cac file JavaScript khac su dung API.
 window.TechGearAPI = TechGearAPI;

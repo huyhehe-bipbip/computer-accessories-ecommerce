@@ -8,17 +8,19 @@ using Microsoft.EntityFrameworkCore;
 public class ProductsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IWebHostEnvironment _environment;
 
-    public ProductsController(AppDbContext context)
+    public ProductsController(
+        AppDbContext context,
+        IWebHostEnvironment environment)
     {
         _context = context;
+        _environment = environment;
     }
 
     // ==========================================
     // 1. LAY DANH SACH SAN PHAM
     // GET: api/products
-    // Guest: guest_price
-    // Member: member_price
     // ==========================================
     [HttpGet]
     public async Task<IActionResult> GetProducts()
@@ -46,7 +48,7 @@ public class ProductsController : ControllerBase
     }
 
     // ==========================================
-    // 2. LAY CHI TIET SAN PHAM
+    // 2. CHI TIET SAN PHAM
     // GET: api/products/{id}
     // ==========================================
     [HttpGet("{id}")]
@@ -73,20 +75,14 @@ public class ProductsController : ControllerBase
             .FirstOrDefaultAsync();
 
         if (product == null)
-        {
-            return NotFound(new
-            {
-                message = "Khong tim thay san pham."
-            });
-        }
+            return NotFound(new { message = "Khong tim thay san pham." });
 
         return Ok(product);
     }
 
     // ==========================================
-    // 3. THEM SAN PHAM
+    // 3. THEM SAN PHAM - ADMIN
     // POST: api/products
-    // CHI ADMIN DUOC THUC HIEN
     // ==========================================
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -108,20 +104,15 @@ public class ProductsController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Gia va so luong ton kho khong duoc am."
+                message = "Gia va so luong khong duoc am."
             });
         }
 
-        var categoryExists = await _context.categories
+        bool categoryExists = await _context.categories
             .AnyAsync(c => c.category_id == product.category_id);
 
         if (!categoryExists)
-        {
-            return BadRequest(new
-            {
-                message = "Danh muc san pham khong ton tai."
-            });
-        }
+            return BadRequest(new { message = "Danh muc khong ton tai." });
 
         product.product_id = 0;
 
@@ -134,15 +125,13 @@ public class ProductsController : ControllerBase
             new
             {
                 message = "Them san pham thanh cong.",
-                product_id = product.product_id,
-                product_name = product.product_name
+                product_id = product.product_id
             });
     }
 
     // ==========================================
-    // 4. CAP NHAT SAN PHAM
+    // 4. CAP NHAT SAN PHAM - ADMIN
     // PUT: api/products/{id}
-    // CHI ADMIN DUOC THUC HIEN
     // ==========================================
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
@@ -165,7 +154,7 @@ public class ProductsController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Gia va so luong ton kho khong duoc am."
+                message = "Gia va so luong khong duoc am."
             });
         }
 
@@ -173,23 +162,13 @@ public class ProductsController : ControllerBase
             .FirstOrDefaultAsync(p => p.product_id == id);
 
         if (product == null)
-        {
-            return NotFound(new
-            {
-                message = "Khong tim thay san pham."
-            });
-        }
+            return NotFound(new { message = "Khong tim thay san pham." });
 
-        var categoryExists = await _context.categories
+        bool categoryExists = await _context.categories
             .AnyAsync(c => c.category_id == request.category_id);
 
         if (!categoryExists)
-        {
-            return BadRequest(new
-            {
-                message = "Danh muc san pham khong ton tai."
-            });
-        }
+            return BadRequest(new { message = "Danh muc khong ton tai." });
 
         product.product_name = request.product_name.Trim();
         product.description = request.description;
@@ -203,20 +182,21 @@ public class ProductsController : ControllerBase
 
         return Ok(new
         {
-            message = "Cap nhat san pham thanh cong.",
-            product_id = product.product_id,
-            product_name = product.product_name
+            message = "Cap nhat san pham thanh cong."
         });
     }
 
     // ==========================================
-    // 5. XOA SAN PHAM
-    // DELETE: api/products/{id}
-    // CHI ADMIN DUOC THUC HIEN
+    // 5. TAI ANH SAN PHAM - CHI ADMIN
+    // POST: api/products/{id}/image
+    // Form field: image
     // ==========================================
-    [HttpDelete("{id}")]
+    [HttpPost("{id}/image")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteProduct(int id)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadProductImage(
+        int id,
+        IFormFile image)
     {
         var product = await _context.products
             .FirstOrDefaultAsync(p => p.product_id == id);
@@ -229,6 +209,102 @@ public class ProductsController : ControllerBase
             });
         }
 
+        if (image == null || image.Length == 0)
+        {
+            return BadRequest(new
+            {
+                message = "Vui long chon anh."
+            });
+        }
+
+        // Gioi han dung luong 5 MB
+        if (image.Length > 5 * 1024 * 1024)
+        {
+            return BadRequest(new
+            {
+                message = "Anh khong duoc vuot qua 5 MB."
+            });
+        }
+
+        // Chi cho phep cac dinh dang anh thong dung
+        var allowedExtensions = new[]
+        {
+            ".jpg", ".jpeg", ".png", ".webp"
+        };
+
+        string extension = Path.GetExtension(image.FileName)
+            .ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(extension))
+        {
+            return BadRequest(new
+            {
+                message = "Chi chap nhan JPG, JPEG, PNG va WEBP."
+            });
+        }
+
+        string imageFolder = Path.Combine(
+            _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot"),
+            "images"
+        );
+
+        Directory.CreateDirectory(imageFolder);
+
+        // Tao ten file ngau nhien de tranh trung ten
+        string fileName = $"{Guid.NewGuid()}{extension}";
+
+        string filePath = Path.Combine(imageFolder, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await image.CopyToAsync(stream);
+        }
+
+        // Xoa anh cu neu anh cu nam trong thu muc images
+        if (!string.IsNullOrWhiteSpace(product.image_url))
+        {
+            string oldFileName = Path.GetFileName(
+                product.image_url
+            );
+
+            string oldFilePath = Path.Combine(
+                imageFolder,
+                oldFileName
+            );
+
+            if (System.IO.File.Exists(oldFilePath))
+            {
+                System.IO.File.Delete(oldFilePath);
+            }
+        }
+
+        // Luu duong dan anh vao SQL Server
+        product.image_url = $"/images/{fileName}";
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Tai anh san pham thanh cong.",
+            product_id = product.product_id,
+            image_url = product.image_url
+        });
+    }
+
+    // ==========================================
+    // 6. XOA SAN PHAM - ADMIN
+    // DELETE: api/products/{id}
+    // ==========================================
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteProduct(int id)
+    {
+        var product = await _context.products
+            .FirstOrDefaultAsync(p => p.product_id == id);
+
+        if (product == null)
+            return NotFound(new { message = "Khong tim thay san pham." });
+
         _context.products.Remove(product);
 
         try
@@ -239,7 +315,7 @@ public class ProductsController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Khong the xoa san pham vi san pham dang duoc su dung trong don hang hoac du lieu khac."
+                message = "Khong the xoa san pham dang duoc su dung."
             });
         }
 
